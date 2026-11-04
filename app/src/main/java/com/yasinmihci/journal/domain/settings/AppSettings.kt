@@ -20,6 +20,8 @@ data class AppSettings(
     val schoolPrepMinutes: Int = 50,
     val sleepCycleMinutes: Int = 90,
     val fallAsleepMinutes: Int = 15,
+    /** Nombre max de cycles de sommeil (6 × 1 h 30 = 9 h). */
+    val maxSleepCycles: Int = 6,
     val weekendLatestWake: LocalTime = LocalTime.of(10, 30),
     val icsUrl: String = "",
     /** Groupes ADE gardés (champ DESCRIPTION de l'ICS). */

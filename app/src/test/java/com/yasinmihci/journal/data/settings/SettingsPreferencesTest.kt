@@ -31,6 +31,7 @@ class SettingsPreferencesTest {
             schoolPrepMinutes = 45,
             sleepCycleMinutes = 85,
             fallAsleepMinutes = 10,
+            maxSleepCycles = 5,
             weekendLatestWake = LocalTime.of(9, 45),
             icsUrl = "https://example.org/a.ics",
             icsGroups = listOf("IT4 FISA - Cyber"),

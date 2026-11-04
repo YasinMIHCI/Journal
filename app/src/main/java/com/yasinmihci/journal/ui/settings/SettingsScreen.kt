@@ -1,7 +1,5 @@
 package com.yasinmihci.journal.ui.settings
 
-import android.app.TimePickerDialog
-import android.content.Context
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -52,6 +50,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yasinmihci.journal.R
 import com.yasinmihci.journal.domain.settings.AppSettings
+import com.yasinmihci.journal.ui.common.showTimePicker
 import com.yasinmihci.journal.domain.settings.CompanyDay
 import com.yasinmihci.journal.ui.format.formatDuration
 import com.yasinmihci.journal.ui.format.formatTime
@@ -63,7 +62,13 @@ import java.util.Locale
 /** Dialogue d'édition ouvert (texte ou durée). Les heures passent par le TimePickerDialog système. */
 private sealed interface Edit {
     val title: Int
-    data class Minutes(override val title: Int, val initial: Int, val onSet: (Int) -> Unit) : Edit
+    data class Number(
+        override val title: Int,
+        val initial: Int,
+        val range: IntRange,
+        val suffix: Int?,
+        val onSet: (Int) -> Unit,
+    ) : Edit
     data class Text(
         override val title: Int,
         val initial: String,
@@ -120,14 +125,14 @@ private fun SettingsContent(
     val context = LocalContext.current
     @Composable
     fun time(label: Int, value: LocalTime, set: (AppSettings, LocalTime) -> AppSettings) =
-        Row3(label, formatTime(value)) { pickTime(context, value) { t -> update { set(it, t) } } }
+        Row3(label, formatTime(value)) { showTimePicker(context, value) { t -> update { set(it, t) } } }
 
     // Entreprise
     Section(R.string.settings_company)
     CompanyHeader()
     AppSettings.WORK_DAYS.forEach { day ->
         CompanyRow(day, s.companyDay(day)) { field, initial ->
-            pickTime(context, initial) { t ->
+            showTimePicker(context, initial) { t ->
                 update { cur ->
                     val c = cur.companyDay(day)
                     val new = when (field) {
@@ -150,6 +155,9 @@ private fun SettingsContent(
     Section(R.string.settings_weekend)
     MinutesRow(R.string.settings_sleep_cycle, s.sleepCycleMinutes, openEdit) { v -> update { it.copy(sleepCycleMinutes = v) } }
     MinutesRow(R.string.settings_fall_asleep, s.fallAsleepMinutes, openEdit) { v -> update { it.copy(fallAsleepMinutes = v) } }
+    Row3(R.string.settings_max_cycles, s.maxSleepCycles.toString()) {
+        openEdit(Edit.Number(R.string.settings_max_cycles, s.maxSleepCycles, 1..12, null) { v -> update { it.copy(maxSleepCycles = v) } })
+    }
     time(R.string.settings_latest_wake, s.weekendLatestWake) { a, t -> a.copy(weekendLatestWake = t) }
 
     // Emploi du temps
@@ -195,7 +203,7 @@ private fun Row3(label: Int, value: String, onClick: () -> Unit) {
 
 @Composable
 private fun MinutesRow(label: Int, value: Int, openEdit: (Edit) -> Unit, onSet: (Int) -> Unit) {
-    Row3(label, formatDuration(value)) { openEdit(Edit.Minutes(label, value, onSet)) }
+    Row3(label, formatDuration(value)) { openEdit(Edit.Number(label, value, 0..720, R.string.unit_min, onSet)) }
 }
 
 private val COL = 72.dp
@@ -234,14 +242,11 @@ private fun CompanyRow(day: DayOfWeek, c: CompanyDay, onPick: (field: Int, initi
     }
 }
 
-private fun pickTime(context: Context, initial: LocalTime, onSet: (LocalTime) -> Unit) {
-    TimePickerDialog(context, { _, h, m -> onSet(LocalTime.of(h, m)) }, initial.hour, initial.minute, true).show()
-}
 
 @Composable
 private fun EditDialog(edit: Edit, onDismiss: () -> Unit) {
     val initial = when (edit) {
-        is Edit.Minutes -> edit.initial.toString()
+        is Edit.Number -> edit.initial.toString()
         is Edit.Text -> edit.initial
     }
     // Texte entièrement sélectionné : on tape directement la nouvelle valeur.
@@ -251,7 +256,7 @@ private fun EditDialog(edit: Edit, onDismiss: () -> Unit) {
     LaunchedEffect(edit) { focusRequester.requestFocus() }
     val minutes = text.trim().toIntOrNull()
     val valid = when (edit) {
-        is Edit.Minutes -> minutes != null && minutes in 0..720
+        is Edit.Number -> minutes != null && minutes in edit.range
         is Edit.Text -> true
     }
     AlertDialog(
@@ -265,15 +270,15 @@ private fun EditDialog(edit: Edit, onDismiss: () -> Unit) {
                 singleLine = edit !is Edit.Text || !edit.multiline,
                 minLines = if (edit is Edit.Text && edit.multiline) 3 else 1,
                 isError = !valid,
-                suffix = if (edit is Edit.Minutes) {
-                    { Text(stringResource(R.string.unit_min)) }
+                suffix = if (edit is Edit.Number && edit.suffix != null) {
+                    { Text(stringResource(edit.suffix)) }
                 } else null,
                 supportingText = if (edit is Edit.Text && edit.multiline) {
                     { Text(stringResource(R.string.settings_one_per_line)) }
                 } else null,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = when (edit) {
-                        is Edit.Minutes -> KeyboardType.Number
+                        is Edit.Number -> KeyboardType.Number
                         is Edit.Text -> if (edit.multiline) KeyboardType.Text else KeyboardType.Uri
                     },
                 ),
@@ -284,7 +289,7 @@ private fun EditDialog(edit: Edit, onDismiss: () -> Unit) {
                 enabled = valid,
                 onClick = {
                     when (edit) {
-                        is Edit.Minutes -> edit.onSet(minutes!!)
+                        is Edit.Number -> edit.onSet(minutes!!)
                         is Edit.Text -> edit.onSet(text)
                     }
                     onDismiss()

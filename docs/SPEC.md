@@ -17,9 +17,15 @@ Source : `assets/periods_4a_2026_2027.json` (modifiable dans l'app).
 - Réveil = départ − 50 min (préparation).
 - Ex. : cours 8h15 → départ 7h45 → réveil 6h55.
 
-### Week-end
-- L'utilisateur saisit son heure de coucher.
-- Réveil calculé pour un sommeil optimal (cycles), **au plus tard 10h30**.
+### Week-end (et jours libres : fériés, école sans cours, hors calendrier)
+- L'utilisateur saisit son heure de coucher (écran du jour, pour la nuit précédente).
+- Réveil = coucher + endormissement (15 min) + n cycles (1 h 30), n le plus grand
+  possible sans dépasser **10h30** ni le max de cycles (6 = 9 h). Tout réglable.
+- Coucher ≥ midi = veille au soir ; < midi = après minuit.
+- Moins d'un cycle possible ou coucher non saisi → réveil à 10h30.
+
+### Type de journée
+Priorité : week-end > férié > école > entreprise ; hors périodes = libre.
 
 ## 3. Synchro emploi du temps
 - Source ADE (plannings.ube.fr), export ICS.

@@ -17,6 +17,7 @@ private val SCHOOL_TRAVEL = intPreferencesKey("school_travel_min")
 private val SCHOOL_PREP = intPreferencesKey("school_prep_min")
 private val SLEEP_CYCLE = intPreferencesKey("sleep_cycle_min")
 private val FALL_ASLEEP = intPreferencesKey("fall_asleep_min")
+private val MAX_CYCLES = intPreferencesKey("max_sleep_cycles")
 private val WEEKEND_LATEST_WAKE = intPreferencesKey("weekend_latest_wake")
 private val ICS_URL = stringPreferencesKey("ics_url")
 private val ICS_GROUPS = stringPreferencesKey("ics_groups")
@@ -46,6 +47,7 @@ fun Preferences.toAppSettings(): AppSettings {
         schoolPrepMinutes = this[SCHOOL_PREP] ?: d.schoolPrepMinutes,
         sleepCycleMinutes = this[SLEEP_CYCLE] ?: d.sleepCycleMinutes,
         fallAsleepMinutes = this[FALL_ASLEEP] ?: d.fallAsleepMinutes,
+        maxSleepCycles = this[MAX_CYCLES] ?: d.maxSleepCycles,
         weekendLatestWake = time(WEEKEND_LATEST_WAKE, d.weekendLatestWake),
         icsUrl = this[ICS_URL] ?: d.icsUrl,
         icsGroups = this[ICS_GROUPS]?.split('\n')?.filter { it.isNotBlank() } ?: d.icsGroups,
@@ -67,6 +69,7 @@ fun MutablePreferences.write(s: AppSettings) {
     this[SCHOOL_PREP] = s.schoolPrepMinutes
     this[SLEEP_CYCLE] = s.sleepCycleMinutes
     this[FALL_ASLEEP] = s.fallAsleepMinutes
+    this[MAX_CYCLES] = s.maxSleepCycles
     this[WEEKEND_LATEST_WAKE] = s.weekendLatestWake.toMinutes()
     this[ICS_URL] = s.icsUrl
     this[ICS_GROUPS] = s.icsGroups.joinToString("\n")
