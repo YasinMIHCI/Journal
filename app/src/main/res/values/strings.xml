@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Journal</string>
+    <string name="today">Aujourd’hui</string>
+    <string name="previous_day">Jour précédent</string>
+    <string name="next_day">Jour suivant</string>
+    <string name="section_activities">Activités</string>
+    <string name="activities_empty">Aucune activité.</string>
+    <string name="habit_goal">%1$s / sem.</string>
+    <string name="section_journal">Journal</string>
+    <string name="journal_hint">Qu’as-tu fait ?</string>
+</resources>

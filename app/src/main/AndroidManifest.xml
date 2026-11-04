@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Déclarées dès maintenant pour les fonctionnalités à venir -->
+    <uses-permission android:name="android.permission.INTERNET" />                <!-- synchro ICS -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />      <!-- Android 13+ -->
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />         <!-- réveil, Android 13+ -->
+    <uses-permission
+        android:name="android.permission.SCHEDULE_EXACT_ALARM"
+        android:maxSdkVersion="32" />                                             <!-- réveil, Android 12 -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />  <!-- replanifier après reboot -->
+    <uses-permission android:name="android.permission.CAMERA" />                  <!-- session activité -->
+
+    <uses-feature
+        android:name="android.hardware.camera.front"
+        android:required="false" />
+
+    <application
+        android:name=".JournalApplication"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Journal">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>
