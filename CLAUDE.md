@@ -16,7 +16,7 @@ Spécification complète : `docs/SPEC.md`. Lire avant toute nouvelle fonctionnal
 - Room (KSP) pour les données. Versions dans `gradle/libs.versions.toml`.
 - DataStore Preferences : réglages (`data/settings`, modèle `domain/settings/AppSettings`).
 - WorkManager : synchro ICS quotidienne (`work/CalendarSyncWorker`).
-- Prévu (déjà dans le catalogue, pas encore branché) : CameraX.
+- CameraX : aperçu caméra frontale pendant une session (`ui/session`).
 - DI manuelle : `di/AppContainer.kt` (créé par `JournalApplication`). Pas de Hilt.
 
 ## Commandes
@@ -35,7 +35,7 @@ JournalApplication.kt     Application, crée AppContainer
 MainActivity.kt           Point d'entrée Compose
 di/AppContainer.kt        DB, repositories, appScope
 data/local/               Room : AppDatabase, Converters, entity/, dao/
-data/repository/          Accès données pour l'UI (JournalRepository, HabitRepository)
+data/repository/          Accès données pour l'UI (Journal, Habit, Session)
 ui/theme/                 Thème Material 3 (couleurs dynamiques)
 ui/format/                Formatage (durées…)
 ui/today/                 Écran principal : activités + journal du jour
@@ -47,16 +47,12 @@ data/periods/             Lecture de assets/periods_*.json
 data/calendar/            Téléchargement ICS, cours Room, état de synchro
 work/                     CalendarSyncWorker (WorkManager, quotidien)
 domain/day/AlarmPlanner   Prochain réveil / départ (pur, testé)
+domain/activity/          Créneaux libres (FreeSlots), semaine lun→dim, choix d'activité
+ui/session/               Caméra frontale (CameraX) + chrono d'une session
+ui/habits/                Écran d'édition des activités
 alarm/                    AlarmScheduler (setAlarmClock), receivers (alarme, boot/heure),
                           notifications, AlarmActivity (sonnerie), permissions
 ui/settings/              Écran Réglages
-```
-À créer plus tard :
-```
-domain/                   Logique pure (testable JVM) : recherche de créneaux libres
-work/                     WorkManager : planification des notifs
-ui/session/               Caméra frontale (CameraX) + chrono d'une session d'activité
-ui/habits/                Écran d'édition des activités
 ```
 
 ## Conventions

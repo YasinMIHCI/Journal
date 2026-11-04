@@ -17,6 +17,8 @@ import com.yasinmihci.journal.R
 object AlarmNotifications {
     const val CHANNEL_WAKE = "wake"
     const val CHANNEL_DEPARTURE = "departure"
+    const val CHANNEL_SLOT = "slot"
+    const val ID_SLOT = 3
     const val ID_WAKE = 1
     const val ID_DEPARTURE = 2
 
@@ -48,7 +50,12 @@ object AlarmNotifications {
             context.getString(R.string.channel_departure),
             NotificationManager.IMPORTANCE_HIGH,
         )
-        nm.createNotificationChannels(listOf(wake, departure))
+        val slot = NotificationChannel(
+            CHANNEL_SLOT,
+            context.getString(R.string.channel_slot),
+            NotificationManager.IMPORTANCE_DEFAULT,
+        )
+        nm.createNotificationChannels(listOf(wake, departure, slot))
     }
 
     /** Sonnerie : son d'alarme en boucle (FLAG_INSISTENT) + écran plein si verrouillé. */
@@ -103,6 +110,26 @@ object AlarmNotifications {
             .setAutoCancel(true)
             .build()
         notify(context, ID_DEPARTURE, notification)
+    }
+
+    /** Créneau libre : toucher ouvre la session (caméra + chrono) de l'activité. */
+    fun showSlot(context: Context, habitId: Long, title: String, text: String) {
+        val open = PendingIntent.getActivity(
+            context, ID_SLOT,
+            Intent(context, MainActivity::class.java)
+                .putExtra(MainActivity.EXTRA_SESSION_HABIT_ID, habitId)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+        )
+        val notification = NotificationCompat.Builder(context, CHANNEL_SLOT)
+            .setSmallIcon(R.drawable.ic_alarm)
+            .setContentTitle(title)
+            .setContentText(text)
+            .setCategory(NotificationCompat.CATEGORY_REMINDER)
+            .setContentIntent(open)
+            .setAutoCancel(true)
+            .build()
+        notify(context, ID_SLOT, notification)
     }
 
     private fun notify(context: Context, id: Int, notification: Notification) {

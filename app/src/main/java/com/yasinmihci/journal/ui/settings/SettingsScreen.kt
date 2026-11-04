@@ -158,6 +158,9 @@ private fun SettingsContent(
     SwitchRow(R.string.settings_departure_reminder, s.departureReminderEnabled, nextAlarmText(nextAlarms?.departure)) { v ->
         update { it.copy(departureReminderEnabled = v) }
     }
+    SwitchRow(R.string.settings_slot_notifications, s.slotNotificationsEnabled, nextAlarmText(nextAlarms?.slot?.start)) { v ->
+        update { it.copy(slotNotificationsEnabled = v) }
+    }
 
     // Entreprise
     Section(R.string.settings_company)

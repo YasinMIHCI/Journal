@@ -9,5 +9,9 @@ class HabitRepository(private val dao: HabitDao) {
 
     suspend fun save(habit: HabitEntity) = dao.upsert(habit)
 
-    suspend fun delete(habit: HabitEntity) = dao.delete(habit)
+    suspend fun active(): List<HabitEntity> = dao.active()
+
+    suspend fun get(id: Long): HabitEntity? = dao.get(id)
+
+    suspend fun archive(id: Long) = dao.archive(id)
 }

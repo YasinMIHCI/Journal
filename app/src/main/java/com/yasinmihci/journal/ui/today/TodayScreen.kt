@@ -3,6 +3,8 @@ package com.yasinmihci.journal.ui.today
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,6 +27,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -53,6 +56,8 @@ import java.util.Locale
 @Composable
 fun TodayScreen(
     onOpenSettings: () -> Unit,
+    onOpenHabits: () -> Unit,
+    onStartSession: (Long) -> Unit,
     viewModel: TodayViewModel = viewModel(factory = TodayViewModel.Factory),
 ) {
     val habits by viewModel.habits.collectAsStateWithLifecycle()
@@ -72,6 +77,8 @@ fun TodayScreen(
         onJournalChange = viewModel::onJournalChange,
         onOpenSettings = onOpenSettings,
         onSetBedtime = viewModel::setBedtime,
+        onOpenHabits = onOpenHabits,
+        onStartSession = onStartSession,
     )
 }
 
@@ -82,7 +89,7 @@ private fun TodayContent(
     isToday: Boolean,
     wakePlan: WakePlan?,
     courses: List<Course>,
-    habits: List<HabitEntity>,
+    habits: List<HabitProgress>,
     journalText: String,
     journalLoaded: Boolean,
     onPreviousDay: () -> Unit,
@@ -91,6 +98,8 @@ private fun TodayContent(
     onJournalChange: (String) -> Unit,
     onOpenSettings: () -> Unit,
     onSetBedtime: (LocalTime) -> Unit,
+    onOpenHabits: () -> Unit,
+    onStartSession: (Long) -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -144,7 +153,7 @@ private fun TodayContent(
         ) {
             wakePlan?.let { DaySection(it, onSetBedtime) }
             if (courses.isNotEmpty()) CoursesSection(courses)
-            HabitsSection(habits)
+            HabitsSection(habits, onOpenHabits, onStartSession)
             JournalSection(journalText, journalLoaded, onJournalChange)
         }
     }
@@ -213,9 +222,13 @@ private fun CoursesSection(courses: List<Course>) {
 }
 
 @Composable
-private fun HabitsSection(habits: List<HabitEntity>) {
+private fun HabitsSection(habits: List<HabitProgress>, onOpenHabits: () -> Unit, onStartSession: (Long) -> Unit) {
     Column {
-        SectionTitle(stringResource(R.string.section_activities))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            SectionTitle(stringResource(R.string.section_activities))
+            Spacer(Modifier.weight(1f))
+            TextButton(onClick = onOpenHabits) { Text(stringResource(R.string.habit_edit)) }
+        }
         if (habits.isEmpty()) {
             Text(
                 stringResource(R.string.activities_empty),
@@ -224,12 +237,25 @@ private fun HabitsSection(habits: List<HabitEntity>) {
                 modifier = Modifier.padding(vertical = 8.dp),
             )
         } else {
-            habits.forEach { habit ->
+            habits.forEach { p ->
                 ListItem(
-                    headlineContent = { Text(habit.name) },
-                    trailingContent = {
-                        Text(stringResource(R.string.habit_goal, formatDuration(habit.weeklyGoalMinutes)))
+                    headlineContent = { Text(p.habit.name) },
+                    supportingContent = {
+                        Text(
+                            if (p.remainingMinutes == 0) stringResource(R.string.habit_done)
+                            else stringResource(R.string.habit_remaining, formatDuration(p.remainingMinutes)),
+                        )
                     },
+                    trailingContent = {
+                        Text(
+                            stringResource(
+                                R.string.habit_progress,
+                                formatDuration((p.doneSeconds / 60).toInt()),
+                                formatDuration(p.habit.weeklyGoalMinutes),
+                            ),
+                        )
+                    },
+                    modifier = Modifier.clickable { onStartSession(p.habit.id) },
                 )
             }
         }
@@ -272,7 +298,7 @@ private fun TodayEmptyPreview() {
             courses = emptyList(),
             wakePlan = WakePlan.Rest(DayType.WEEKEND, null, LocalTime.of(10, 30), null),
             journalText = "", journalLoaded = true,
-            onPreviousDay = {}, onNextDay = {}, onToday = {}, onJournalChange = {}, onOpenSettings = {}, onSetBedtime = {},
+            onPreviousDay = {}, onNextDay = {}, onToday = {}, onJournalChange = {}, onOpenSettings = {}, onSetBedtime = {}, onOpenHabits = {}, onStartSession = {},
         )
     }
 }
@@ -285,9 +311,9 @@ private fun TodayFilledPreview() {
             date = LocalDate.of(2026, 11, 4), isToday = false,
             courses = emptyList(),
             wakePlan = WakePlan.Departure(DayType.COMPANY, LocalTime.of(6, 15), LocalTime.of(7, 5)),
-            habits = listOf(HabitEntity(1, "Piano", 60), HabitEntity(2, "Dessin", 90)),
+            habits = listOf(HabitProgress(HabitEntity(1, "Piano", 60), 900), HabitProgress(HabitEntity(2, "Dessin", 90), 0)),
             journalText = "Cours de réseau, 30 min de piano.", journalLoaded = true,
-            onPreviousDay = {}, onNextDay = {}, onToday = {}, onJournalChange = {}, onOpenSettings = {}, onSetBedtime = {},
+            onPreviousDay = {}, onNextDay = {}, onToday = {}, onJournalChange = {}, onOpenSettings = {}, onSetBedtime = {}, onOpenHabits = {}, onStartSession = {},
         )
     }
 }

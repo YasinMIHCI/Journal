@@ -35,6 +35,8 @@ data class AppSettings(
     val minSlotMinutes: Int = 30,
     val wakeAlarmEnabled: Boolean = true,
     val departureReminderEnabled: Boolean = true,
+    /** Notification au début de chaque créneau libre. */
+    val slotNotificationsEnabled: Boolean = true,
 ) {
     fun companyDay(day: DayOfWeek): CompanyDay =
         companyDays[day] ?: DEFAULT_COMPANY_DAYS.getValue(day)

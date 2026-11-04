@@ -11,7 +11,7 @@ junit = "4.13.2"
 orgJson = "20240303"
 # Prévu pour la suite (pas encore utilisé dans app/build.gradle.kts)
 work = "2.10.0"  # branché
-camerax = "1.4.1"
+camerax = "1.4.1"  # branché
 datastore = "1.1.1"  # branché
 
 [libraries]

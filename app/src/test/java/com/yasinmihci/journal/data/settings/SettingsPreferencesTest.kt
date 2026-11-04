@@ -42,6 +42,7 @@ class SettingsPreferencesTest {
             minSlotMinutes = 45,
             wakeAlarmEnabled = false,
             departureReminderEnabled = false,
+            slotNotificationsEnabled = false,
         )
         val prefs = mutablePreferencesOf().apply { write(custom) }
         assertEquals(custom, prefs.toAppSettings())

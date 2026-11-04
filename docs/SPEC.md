@@ -56,6 +56,17 @@ Priorité : week-end > férié > école > entreprise ; hors périodes = libre.
 - Clic sur la notif → caméra frontale (je me vois) + chrono.
 - Fin de session → temps réel soustrait du restant de la semaine.
 
+Règles retenues :
+- Créneau = fenêtre 8h–20h (réglable), jamais avant le réveil, durée ≥ 30 min (réglable).
+  - Entreprise : occupé du départ au retour.
+  - École : occupé du départ à fin du dernier cours + trajet (pas de créneau entre deux cours).
+    Sans cours connu : aucun créneau.
+  - Jour libre : libre dès le réveil.
+- Notification au début de chaque créneau (pas de limite par jour), pour l'activité
+  à qui il reste le plus de temps cette semaine ; rien si tous les objectifs sont atteints.
+- Session : chrono avec pause ; « Terminer » enregistre, retour = abandon (confirmation).
+- Supprimer une activité = l'archiver (les sessions passées restent).
+
 ## 5. Journal
 - Un texte par jour, sous la journée. Sauvegarde auto.
 

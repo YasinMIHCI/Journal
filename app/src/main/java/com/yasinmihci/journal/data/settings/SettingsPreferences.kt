@@ -29,6 +29,7 @@ private val ACTIVITY_END = intPreferencesKey("activity_window_end")
 private val MIN_SLOT = intPreferencesKey("min_slot_min")
 private val WAKE_ALARM = booleanPreferencesKey("wake_alarm_enabled")
 private val DEPARTURE_REMINDER = booleanPreferencesKey("departure_reminder_enabled")
+private val SLOT_NOTIFS = booleanPreferencesKey("slot_notifications_enabled")
 
 private fun LocalTime.toMinutes(): Int = hour * 60 + minute
 private fun Int.toTime(): LocalTime = LocalTime.of((this / 60).coerceIn(0, 23), (this % 60).coerceIn(0, 59))
@@ -62,6 +63,7 @@ fun Preferences.toAppSettings(): AppSettings {
         minSlotMinutes = this[MIN_SLOT] ?: d.minSlotMinutes,
         wakeAlarmEnabled = this[WAKE_ALARM] ?: d.wakeAlarmEnabled,
         departureReminderEnabled = this[DEPARTURE_REMINDER] ?: d.departureReminderEnabled,
+        slotNotificationsEnabled = this[SLOT_NOTIFS] ?: d.slotNotificationsEnabled,
     )
 }
 
@@ -87,4 +89,5 @@ fun MutablePreferences.write(s: AppSettings) {
     this[MIN_SLOT] = s.minSlotMinutes
     this[WAKE_ALARM] = s.wakeAlarmEnabled
     this[DEPARTURE_REMINDER] = s.departureReminderEnabled
+    this[SLOT_NOTIFS] = s.slotNotificationsEnabled
 }

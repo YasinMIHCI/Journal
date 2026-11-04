@@ -74,4 +74,25 @@
     <string name="perm_exact">Alarmes exactes non autorisées</string>
     <string name="perm_full_screen">Plein écran non autorisé : pas d’écran de réveil verrouillé</string>
     <string name="perm_fix">Toucher pour corriger</string>
+    <string name="channel_slot">Créneaux libres</string>
+    <string name="slot_title">Libre jusqu’à %1$s</string>
+    <string name="slot_text">%1$s : reste %2$s cette semaine</string>
+    <string name="settings_slot_notifications">Créneaux libres</string>
+    <string name="habits_title">Activités</string>
+    <string name="habit_new">Nouvelle activité</string>
+    <string name="habit_edit">Modifier</string>
+    <string name="habit_name">Nom</string>
+    <string name="habit_goal_label">Objectif / semaine</string>
+    <string name="habit_delete">Supprimer</string>
+    <string name="habit_remaining">Reste %1$s</string>
+    <string name="habit_done">Objectif atteint</string>
+    <string name="habit_progress">%1$s / %2$s</string>
+    <string name="session_start">Démarrer</string>
+    <string name="session_pause">Pause</string>
+    <string name="session_resume">Reprendre</string>
+    <string name="session_finish">Terminer</string>
+    <string name="session_quit_title">Abandonner la session ?</string>
+    <string name="session_quit">Abandonner</string>
+    <string name="session_no_camera">Caméra indisponible</string>
+    <string name="session_saved">%1$s enregistrées</string>
 </resources>

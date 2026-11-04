@@ -11,6 +11,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.yasinmihci.journal.JournalApplication
 import com.yasinmihci.journal.data.local.entity.HabitEntity
 import com.yasinmihci.journal.data.repository.HabitRepository
+import com.yasinmihci.journal.data.repository.SessionRepository
 import com.yasinmihci.journal.data.repository.JournalRepository
 import com.yasinmihci.journal.data.calendar.CalendarRepository
 import com.yasinmihci.journal.data.periods.PeriodsRepository
@@ -37,6 +38,7 @@ import java.time.LocalTime
 class TodayViewModel(
     private val journalRepository: JournalRepository,
     habitRepository: HabitRepository,
+    sessionRepository: SessionRepository,
     settingsRepository: SettingsRepository,
     private val bedtimeRepository: BedtimeRepository,
     periodsRepository: PeriodsRepository,
@@ -54,7 +56,12 @@ class TodayViewModel(
     var journalLoaded by mutableStateOf(false)
         private set
 
-    val habits: StateFlow<List<HabitEntity>> = habitRepository.observeActive()
+    /** Activités + temps fait dans la semaine (lun → dim) du jour affiché. */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val habits: StateFlow<List<HabitProgress>> = combine(
+        habitRepository.observeActive(),
+        snapshotFlow { date }.flatMapLatest { sessionRepository.observeWeekTotals(it) },
+    ) { list, totals -> list.map { HabitProgress(it, totals[it.id] ?: 0L) } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     /** Cours du jour affiché, filtrés par groupe. */
@@ -128,6 +135,7 @@ class TodayViewModel(
                 TodayViewModel(
                     container.journalRepository,
                     container.habitRepository,
+                    container.sessionRepository,
                     container.settingsRepository,
                     container.bedtimeRepository,
                     container.periodsRepository,
@@ -137,4 +145,8 @@ class TodayViewModel(
             }
         }
     }
+}
+
+data class HabitProgress(val habit: HabitEntity, val doneSeconds: Long) {
+    val remainingMinutes: Int get() = com.yasinmihci.journal.domain.activity.remainingMinutes(habit.weeklyGoalMinutes, doneSeconds)
 }

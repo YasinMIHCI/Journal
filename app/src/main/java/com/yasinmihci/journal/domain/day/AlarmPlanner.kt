@@ -12,6 +12,8 @@ import java.time.ZonedDateTime
 data class NextAlarms(
     val wake: ZonedDateTime?,
     val departure: ZonedDateTime?,
+    /** Prochain créneau libre pour les activités. */
+    val slot: com.yasinmihci.journal.domain.activity.Slot? = null,
 )
 
 object AlarmPlanner {

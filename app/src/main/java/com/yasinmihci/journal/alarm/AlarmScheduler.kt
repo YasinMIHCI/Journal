@@ -11,6 +11,7 @@ import com.yasinmihci.journal.data.periods.PeriodsRepository
 import com.yasinmihci.journal.data.settings.BedtimeRepository
 import com.yasinmihci.journal.data.settings.SettingsRepository
 import com.yasinmihci.journal.domain.calendar.PARIS
+import com.yasinmihci.journal.domain.activity.FreeSlots
 import com.yasinmihci.journal.domain.day.AlarmPlanner
 import com.yasinmihci.journal.domain.day.NextAlarms
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -54,6 +55,18 @@ class AlarmScheduler(
         )
         val wake = computed.wake.takeIf { settings.wakeAlarmEnabled }
         val departure = computed.departure.takeIf { settings.departureReminderEnabled }
+        val slot = if (settings.slotNotificationsEnabled) {
+            FreeSlots.next(
+                now = now,
+                settings = settings,
+                periods = periodsRepository.get(),
+                courses = courses,
+                bedtimeFor = { day -> bedtime?.takeIf { it.wakeDate == day }?.time },
+                horizonDays = HORIZON_DAYS - 1,
+            )
+        } else {
+            null
+        }
 
         val wakePi = operation(AlarmReceiver.ACTION_WAKE)
         if (wake != null) {
@@ -66,26 +79,29 @@ class AlarmScheduler(
             alarmManager.cancel(wakePi)
         }
 
-        val departurePi = operation(AlarmReceiver.ACTION_DEPARTURE)
-        if (departure != null) {
-            val at = departure.toInstant().toEpochMilli()
-            if (canScheduleExact()) {
-                alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, departurePi)
-            } else {
-                alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, departurePi)
-            }
-        } else {
-            alarmManager.cancel(departurePi)
+        setExact(operation(AlarmReceiver.ACTION_DEPARTURE), departure?.toInstant()?.toEpochMilli())
+        val slotPi = operation(AlarmReceiver.ACTION_SLOT) {
+            putExtra(AlarmReceiver.EXTRA_SLOT_END_MS, slot?.end?.toInstant()?.toEpochMilli() ?: 0L)
         }
-        _next.value = NextAlarms(wake, departure)
+        setExact(slotPi, slot?.start?.toInstant()?.toEpochMilli())
+        _next.value = NextAlarms(wake, departure, slot)
+    }
+
+    /** Alarme exacte (ou approximative si l'autorisation manque) ; [atMs] null = annuler. */
+    private fun setExact(pi: PendingIntent, atMs: Long?) {
+        when {
+            atMs == null -> alarmManager.cancel(pi)
+            canScheduleExact() -> alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, atMs, pi)
+            else -> alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, atMs, pi)
+        }
     }
 
     fun canScheduleExact(): Boolean =
         Build.VERSION.SDK_INT < Build.VERSION_CODES.S || alarmManager.canScheduleExactAlarms()
 
-    private fun operation(action: String): PendingIntent = PendingIntent.getBroadcast(
+    private fun operation(action: String, extras: Intent.() -> Unit = {}): PendingIntent = PendingIntent.getBroadcast(
         context, action.hashCode(),
-        Intent(context, AlarmReceiver::class.java).setAction(action),
+        Intent(context, AlarmReceiver::class.java).setAction(action).apply(extras),
         PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
     )
 

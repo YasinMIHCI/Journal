@@ -7,6 +7,7 @@ import com.yasinmihci.journal.data.calendar.SyncStateRepository
 import com.yasinmihci.journal.data.local.AppDatabase
 import com.yasinmihci.journal.data.repository.HabitRepository
 import com.yasinmihci.journal.data.repository.JournalRepository
+import com.yasinmihci.journal.data.repository.SessionRepository
 import com.yasinmihci.journal.data.periods.PeriodsRepository
 import com.yasinmihci.journal.data.settings.BedtimeRepository
 import com.yasinmihci.journal.data.settings.SettingsRepository
@@ -23,6 +24,7 @@ class AppContainer(context: Context) {
 
     val journalRepository = JournalRepository(database.journalDao(), appScope)
     val habitRepository = HabitRepository(database.habitDao())
+    val sessionRepository = SessionRepository(database.sessionDao())
     val settingsRepository = SettingsRepository.create(context)
     val bedtimeRepository = BedtimeRepository.create(context)
     val periodsRepository = PeriodsRepository(context.applicationContext)
