@@ -82,6 +82,13 @@ class AlarmPlannerTest {
     }
 
     @Test
+    fun schoolDay_noCourseKnown_defaultFirstCourse() {
+        val n = next("2026-11-15T21:00")
+        assertEquals(at("2026-11-16T06:40"), n.wake)
+        assertEquals(at("2026-11-16T07:30"), n.departure)
+    }
+
+    @Test
     fun nothingInHorizon_whenOutsideCalendar_onlyWakeAtLatest() {
         // Hors calendrier (été 2026) : jours libres → réveil 10h30, pas de départ.
         val n = next("2026-08-10T12:00")

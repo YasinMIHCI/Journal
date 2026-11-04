@@ -160,6 +160,9 @@ private fun DaySection(plan: WakePlan, onSetBedtime: (LocalTime) -> Unit) {
                 headlineContent = {
                     Text(stringResource(R.string.plan_departure, formatTime(plan.wake), formatTime(plan.departure)))
                 },
+                supportingContent = plan.defaultCourse?.let { course ->
+                    { Text(stringResource(R.string.plan_default_course, formatTime(course))) }
+                },
             )
             is WakePlan.Rest -> ListItem(
                 headlineContent = {
@@ -170,7 +173,6 @@ private fun DaySection(plan: WakePlan, onSetBedtime: (LocalTime) -> Unit) {
                 },
                 supportingContent = {
                     val details = buildList {
-                        if (plan.dayType == DayType.SCHOOL) add(stringResource(R.string.plan_no_course))
                         if (plan.cycles == null) add(stringResource(R.string.plan_latest, formatTime(plan.wake)))
                         else add(pluralStringResource(R.plurals.plan_cycles, plan.cycles, plan.cycles))
                     }

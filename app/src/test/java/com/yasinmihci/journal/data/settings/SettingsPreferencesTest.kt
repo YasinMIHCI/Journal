@@ -29,6 +29,7 @@ class SettingsPreferencesTest {
                 (DayOfWeek.THURSDAY to CompanyDay(LocalTime.of(5, 50), LocalTime.of(6, 40), LocalTime.of(19, 5))),
             schoolTravelMinutes = 25,
             schoolPrepMinutes = 45,
+            schoolDefaultFirstCourse = LocalTime.of(9, 15),
             sleepCycleMinutes = 85,
             fallAsleepMinutes = 10,
             maxSleepCycles = 5,

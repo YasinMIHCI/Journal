@@ -182,6 +182,7 @@ private fun SettingsContent(
     Section(R.string.settings_school)
     MinutesRow(R.string.settings_school_travel, s.schoolTravelMinutes, openEdit) { v -> update { it.copy(schoolTravelMinutes = v) } }
     MinutesRow(R.string.settings_school_prep, s.schoolPrepMinutes, openEdit) { v -> update { it.copy(schoolPrepMinutes = v) } }
+    time(R.string.settings_school_default, s.schoolDefaultFirstCourse) { a, t -> a.copy(schoolDefaultFirstCourse = t) }
 
     // Week-end
     Section(R.string.settings_weekend)

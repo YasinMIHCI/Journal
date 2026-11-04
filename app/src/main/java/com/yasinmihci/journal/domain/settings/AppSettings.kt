@@ -18,6 +18,8 @@ data class AppSettings(
     val schoolTravelMinutes: Int = 30,
     /** Préparation entre réveil et départ, jours d'école. */
     val schoolPrepMinutes: Int = 50,
+    /** Jour d'école sans cours connu (synchro ratée, export incomplet) : premier cours supposé. */
+    val schoolDefaultFirstCourse: LocalTime = LocalTime.of(8, 0),
     val sleepCycleMinutes: Int = 90,
     val fallAsleepMinutes: Int = 15,
     /** Nombre max de cycles de sommeil (6 × 1 h 30 = 9 h). */

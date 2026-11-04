@@ -16,6 +16,7 @@ private fun companyKey(day: DayOfWeek, field: String) = intPreferencesKey("compa
 
 private val SCHOOL_TRAVEL = intPreferencesKey("school_travel_min")
 private val SCHOOL_PREP = intPreferencesKey("school_prep_min")
+private val SCHOOL_DEFAULT_FIRST = intPreferencesKey("school_default_first_course")
 private val SLEEP_CYCLE = intPreferencesKey("sleep_cycle_min")
 private val FALL_ASLEEP = intPreferencesKey("fall_asleep_min")
 private val MAX_CYCLES = intPreferencesKey("max_sleep_cycles")
@@ -48,6 +49,7 @@ fun Preferences.toAppSettings(): AppSettings {
         },
         schoolTravelMinutes = this[SCHOOL_TRAVEL] ?: d.schoolTravelMinutes,
         schoolPrepMinutes = this[SCHOOL_PREP] ?: d.schoolPrepMinutes,
+        schoolDefaultFirstCourse = time(SCHOOL_DEFAULT_FIRST, d.schoolDefaultFirstCourse),
         sleepCycleMinutes = this[SLEEP_CYCLE] ?: d.sleepCycleMinutes,
         fallAsleepMinutes = this[FALL_ASLEEP] ?: d.fallAsleepMinutes,
         maxSleepCycles = this[MAX_CYCLES] ?: d.maxSleepCycles,
@@ -72,6 +74,7 @@ fun MutablePreferences.write(s: AppSettings) {
     }
     this[SCHOOL_TRAVEL] = s.schoolTravelMinutes
     this[SCHOOL_PREP] = s.schoolPrepMinutes
+    this[SCHOOL_DEFAULT_FIRST] = s.schoolDefaultFirstCourse.toMinutes()
     this[SLEEP_CYCLE] = s.sleepCycleMinutes
     this[FALL_ASLEEP] = s.fallAsleepMinutes
     this[MAX_CYCLES] = s.maxSleepCycles

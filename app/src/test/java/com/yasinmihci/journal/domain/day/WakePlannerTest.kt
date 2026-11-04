@@ -42,9 +42,15 @@ class WakePlannerTest {
     }
 
     @Test
-    fun school_withoutCourse_isRest() {
-        val plan = WakePlanner.plan(monday, DayType.SCHOOL, settings, firstCourse = null, bedtime = null)
-        assertEquals(WakePlan.Rest(DayType.SCHOOL, null, t(10, 30), null), plan)
+    fun school_withoutCourse_usesDefaultFirstCourse() {
+        // Défaut 8h00 → départ 7h30 → réveil 6h40 ; le coucher saisi est ignoré.
+        val plan = WakePlanner.plan(monday, DayType.SCHOOL, settings, firstCourse = null, bedtime = t(23, 0))
+        assertEquals(WakePlan.Departure(DayType.SCHOOL, t(6, 40), t(7, 30), defaultCourse = t(8, 0)), plan)
+        val s = settings.copy(schoolDefaultFirstCourse = t(8, 15))
+        assertEquals(
+            WakePlan.Departure(DayType.SCHOOL, t(6, 55), t(7, 45), defaultCourse = t(8, 15)),
+            WakePlanner.plan(monday, DayType.SCHOOL, s, firstCourse = null, bedtime = null),
+        )
     }
 
     @Test

@@ -16,8 +16,10 @@ Source : `assets/periods_4a_2026_2027.json` (modifiable dans l'app).
 - Départ = début du premier cours − 30 min (trajet).
 - Réveil = départ − 50 min (préparation).
 - Ex. : cours 8h15 → départ 7h45 → réveil 6h55.
+- Aucun cours connu ce jour-là (synchro ratée, export incomplet) : premier cours
+  supposé à 8h00 (réglable) → réveil 6h40. Signalé sur l'écran du jour.
 
-### Week-end (et jours libres : fériés, école sans cours, hors calendrier)
+### Week-end (et jours libres : fériés, hors calendrier)
 - L'utilisateur saisit son heure de coucher (écran du jour, pour la nuit précédente).
 - Réveil = coucher + endormissement (15 min) + n cycles (1 h 30), n le plus grand
   possible sans dépasser **10h30** ni le max de cycles (6 = 9 h). Tout réglable.

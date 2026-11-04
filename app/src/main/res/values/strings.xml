@@ -22,6 +22,7 @@
     <string name="settings_school">École</string>
     <string name="settings_school_travel">Trajet</string>
     <string name="settings_school_prep">Préparation</string>
+    <string name="settings_school_default">1er cours si inconnu</string>
     <string name="settings_weekend">Week-end</string>
     <string name="settings_sleep_cycle">Cycle de sommeil</string>
     <string name="settings_fall_asleep">Endormissement</string>
@@ -44,7 +45,7 @@
     <string name="plan_bedtime_missing">Heure de coucher ?</string>
     <string name="plan_latest">Réveil au plus tard %1$s</string>
     <string name="plan_rest">Coucher %1$s → réveil %2$s</string>
-    <string name="plan_no_course">Pas de cours</string>
+    <string name="plan_default_course">Aucun cours connu : %1$s par défaut</string>
     <plurals name="plan_cycles">
         <item quantity="one">%1$d cycle</item>
         <item quantity="other">%1$d cycles</item>

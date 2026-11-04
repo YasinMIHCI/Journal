@@ -15,9 +15,11 @@ sealed interface WakePlan {
         override val dayType: DayType,
         val wake: LocalTime,
         val departure: LocalTime,
+        /** École sans cours connu : calculé sur [AppSettings.schoolDefaultFirstCourse]. */
+        val defaultCourse: LocalTime? = null,
     ) : WakePlan
 
-    /** Jour libre (week-end, férié, école sans cours, hors calendrier) : réveil par cycles. */
+    /** Jour libre (week-end, férié, hors calendrier) : réveil par cycles. */
     data class Rest(
         override val dayType: DayType,
         /** Coucher de la veille au soir (ou après minuit) ; null si pas encore saisi. */
@@ -46,10 +48,13 @@ object WakePlanner {
             val c = settings.companyDay(date.dayOfWeek)
             WakePlan.Departure(dayType, c.wake, c.departure)
         }
-        dayType == DayType.SCHOOL && firstCourse != null -> {
-            val departure = firstCourse.minusMinutes(settings.schoolTravelMinutes.toLong())
+        dayType == DayType.SCHOOL -> {
+            // Sans cours connu, on suppose un cours à l'heure par défaut : mieux vaut un réveil
+            // inutile qu'un cours raté si la synchro a échoué.
+            val course = firstCourse ?: settings.schoolDefaultFirstCourse
+            val departure = course.minusMinutes(settings.schoolTravelMinutes.toLong())
             val wake = departure.minusMinutes(settings.schoolPrepMinutes.toLong())
-            WakePlan.Departure(dayType, wake, departure)
+            WakePlan.Departure(dayType, wake, departure, defaultCourse = course.takeIf { firstCourse == null })
         }
         else -> rest(date, dayType, settings, bedtime)
     }
