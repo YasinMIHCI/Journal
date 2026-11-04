@@ -29,8 +29,13 @@ Priorité : week-end > férié > école > entreprise ; hors périodes = libre.
 
 ## 3. Synchro emploi du temps
 - Source ADE (plannings.ube.fr), export ICS.
-- Synchro automatique quotidienne vers 6h00 (+ manuelle).
+- Synchro automatique quotidienne vers 6h00 (+ manuelle). Heure réglable.
 - URL saisie dans les réglages (ne pas la committer).
+- Tous les cours sont stockés ; filtre à la lecture : un cours est gardé si une ligne
+  de sa DESCRIPTION est exactement un des groupes (défaut : `IT4 FISA`,
+  `IT4 FISA - Cyber`, `4A`). Changer les groupes s'applique sans resynchroniser.
+- « Travail personnel » compte comme un cours (premier cours → réveil).
+- En cas d'échec, les cours précédents sont gardés.
 
 ## 4. Activités (piano, dessin…)
 - Chaque activité a un objectif hebdo (ex. 1 h / semaine).
@@ -47,7 +52,7 @@ Priorité : week-end > férié > école > entreprise ; hors périodes = libre.
 
 ## Décisions (ex-questions ouvertes)
 - [x] Partage « agenda » ADE : Partage → Agenda donne une URL ICS directe, saisie dans les réglages.
-- [x] Groupes gardés : IT4 Cyber → `IT4 FISA` (tronc commun) + `IT4 FISA - Cyber` ; `IT4 FISA - IOT` exclu. Filtre modifiable dans les réglages.
+- [x] Groupes gardés : `IT4 FISA` (tronc commun) + `IT4 FISA - Cyber` + `4A` (événements promo) ; `IT4 FISA - IOT` exclu. Modifiable dans les réglages.
 - [x] Cases gris foncé (3-7 mai 2027, 1-3 sept. 2027) : école.
 - [x] Notifs activités : pas de limite par jour, à chaque créneau libre. Durée min. d'un créneau : réglage (défaut 30 min).
 - [x] Semaine = lundi → dimanche.

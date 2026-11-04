@@ -49,4 +49,11 @@
         <item quantity="one">%1$d cycle</item>
         <item quantity="other">%1$d cycles</item>
     </plurals>
+    <string name="settings_sync_now">Synchroniser</string>
+    <string name="sync_running">Synchro…</string>
+    <string name="sync_never">Jamais synchronisé</string>
+    <string name="sync_ok">%1$d cours · %2$s</string>
+    <string name="sync_error">Erreur : %1$s</string>
+    <string name="section_courses">Cours</string>
+    <string name="course_time">%1$s–%2$s</string>
 </resources>

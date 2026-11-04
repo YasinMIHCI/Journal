@@ -10,7 +10,7 @@ room = "2.6.1"
 junit = "4.13.2"
 orgJson = "20240303"
 # Prévu pour la suite (pas encore utilisé dans app/build.gradle.kts)
-work = "2.10.0"
+work = "2.10.0"  # branché
 camerax = "1.4.1"
 datastore = "1.1.1"  # branché
 

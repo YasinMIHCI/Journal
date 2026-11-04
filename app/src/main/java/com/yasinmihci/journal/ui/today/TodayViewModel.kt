@@ -12,7 +12,9 @@ import com.yasinmihci.journal.JournalApplication
 import com.yasinmihci.journal.data.local.entity.HabitEntity
 import com.yasinmihci.journal.data.repository.HabitRepository
 import com.yasinmihci.journal.data.repository.JournalRepository
+import com.yasinmihci.journal.data.calendar.CalendarRepository
 import com.yasinmihci.journal.data.periods.PeriodsRepository
+import com.yasinmihci.journal.domain.calendar.Course
 import com.yasinmihci.journal.data.settings.Bedtime
 import com.yasinmihci.journal.data.settings.BedtimeRepository
 import com.yasinmihci.journal.data.settings.SettingsRepository
@@ -21,7 +23,9 @@ import com.yasinmihci.journal.domain.day.WakePlanner
 import androidx.compose.runtime.snapshotFlow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -36,6 +40,7 @@ class TodayViewModel(
     settingsRepository: SettingsRepository,
     private val bedtimeRepository: BedtimeRepository,
     periodsRepository: PeriodsRepository,
+    calendarRepository: CalendarRepository,
     private val appScope: CoroutineScope,
 ) : ViewModel() {
 
@@ -52,18 +57,26 @@ class TodayViewModel(
     val habits: StateFlow<List<HabitEntity>> = habitRepository.observeActive()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
+    /** Cours du jour affiché, filtrés par groupe. */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val courses: StateFlow<List<Course>> = snapshotFlow { date }
+        .flatMapLatest { calendarRepository.observeCourses(it) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
     /** Type de journée + réveil/départ du jour affiché. Null tant que non calculé. */
     val wakePlan: StateFlow<WakePlan?> = combine(
         snapshotFlow { date },
+        courses,
         settingsRepository.settings,
         bedtimeRepository.bedtime,
         flow { emit(periodsRepository.get()) },
-    ) { day, settings, bedtime, periods ->
+    ) { day, dayCourses, settings, bedtime, periods ->
         WakePlanner.plan(
             date = day,
             dayType = periods.dayType(day),
             settings = settings,
-            firstCourse = null, // TODO étape 3 : premier cours lu depuis l'ICS
+            // Filtre par date : pendant un changement de jour, la liste peut encore être celle de la veille.
+            firstCourse = dayCourses.filter { it.date == day }.minByOrNull { it.start }?.startTime,
             bedtime = bedtime?.takeIf { it.wakeDate == day }?.time,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
@@ -118,6 +131,7 @@ class TodayViewModel(
                     container.settingsRepository,
                     container.bedtimeRepository,
                     container.periodsRepository,
+                    container.calendarRepository,
                     container.appScope,
                 )
             }

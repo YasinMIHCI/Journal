@@ -38,6 +38,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yasinmihci.journal.R
 import com.yasinmihci.journal.data.local.entity.HabitEntity
+import com.yasinmihci.journal.domain.calendar.Course
 import com.yasinmihci.journal.domain.day.DayType
 import com.yasinmihci.journal.domain.day.WakePlan
 import com.yasinmihci.journal.ui.common.showTimePicker
@@ -56,10 +57,12 @@ fun TodayScreen(
 ) {
     val habits by viewModel.habits.collectAsStateWithLifecycle()
     val wakePlan by viewModel.wakePlan.collectAsStateWithLifecycle()
+    val courses by viewModel.courses.collectAsStateWithLifecycle()
     TodayContent(
         date = viewModel.date,
         isToday = viewModel.date == LocalDate.now(),
         wakePlan = wakePlan,
+        courses = courses,
         habits = habits,
         journalText = viewModel.journalText,
         journalLoaded = viewModel.journalLoaded,
@@ -78,6 +81,7 @@ private fun TodayContent(
     date: LocalDate,
     isToday: Boolean,
     wakePlan: WakePlan?,
+    courses: List<Course>,
     habits: List<HabitEntity>,
     journalText: String,
     journalLoaded: Boolean,
@@ -139,6 +143,7 @@ private fun TodayContent(
             verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
             wakePlan?.let { DaySection(it, onSetBedtime) }
+            if (courses.isNotEmpty()) CoursesSection(courses)
             HabitsSection(habits)
             JournalSection(journalText, journalLoaded, onJournalChange)
         }
@@ -187,6 +192,22 @@ private fun dayTypeLabel(type: DayType): Int = when (type) {
     DayType.WEEKEND -> R.string.day_weekend
     DayType.HOLIDAY -> R.string.day_holiday
     DayType.NONE -> R.string.day_none
+}
+
+@Composable
+private fun CoursesSection(courses: List<Course>) {
+    Column {
+        SectionTitle(stringResource(R.string.section_courses))
+        courses.forEach { c ->
+            ListItem(
+                headlineContent = { Text(c.summary) },
+                supportingContent = {
+                    val time = stringResource(R.string.course_time, formatTime(c.startTime), formatTime(c.endTime))
+                    Text(if (c.location.isBlank()) time else "$time · ${c.location}")
+                },
+            )
+        }
+    }
 }
 
 @Composable
@@ -246,6 +267,7 @@ private fun TodayEmptyPreview() {
     JournalTheme {
         TodayContent(
             date = LocalDate.of(2026, 11, 4), isToday = true, habits = emptyList(),
+            courses = emptyList(),
             wakePlan = WakePlan.Rest(DayType.WEEKEND, null, LocalTime.of(10, 30), null),
             journalText = "", journalLoaded = true,
             onPreviousDay = {}, onNextDay = {}, onToday = {}, onJournalChange = {}, onOpenSettings = {}, onSetBedtime = {},
@@ -259,6 +281,7 @@ private fun TodayFilledPreview() {
     JournalTheme {
         TodayContent(
             date = LocalDate.of(2026, 11, 4), isToday = false,
+            courses = emptyList(),
             wakePlan = WakePlan.Departure(DayType.COMPANY, LocalTime.of(6, 15), LocalTime.of(7, 5)),
             habits = listOf(HabitEntity(1, "Piano", 60), HabitEntity(2, "Dessin", 90)),
             journalText = "Cours de réseau, 30 min de piano.", journalLoaded = true,

@@ -15,7 +15,8 @@ Spécification complète : `docs/SPEC.md`. Lire avant toute nouvelle fonctionnal
 - minSdk 26, targetSdk/compileSdk 35, JDK 17, AGP 8.7.3, Kotlin 2.1.0, Gradle 8.11.1.
 - Room (KSP) pour les données. Versions dans `gradle/libs.versions.toml`.
 - DataStore Preferences : réglages (`data/settings`, modèle `domain/settings/AppSettings`).
-- Prévu (déjà dans le catalogue, pas encore branché) : WorkManager, CameraX.
+- WorkManager : synchro ICS quotidienne (`work/CalendarSyncWorker`).
+- Prévu (déjà dans le catalogue, pas encore branché) : CameraX.
 - DI manuelle : `di/AppContainer.kt` (créé par `JournalApplication`). Pas de Hilt.
 
 ## Commandes
@@ -40,15 +41,18 @@ ui/format/                Formatage (durées…)
 ui/today/                 Écran principal : activités + journal du jour
 data/settings/            DataStore : tous les réglages (AppSettings)
 domain/settings/          AppSettings (modèle + valeurs par défaut)
+domain/day/               Type de journée (Periods) + calcul réveil/départ (WakePlanner)
+domain/calendar/          Course + parser ICS (IcsParser), filtre par groupe
+data/periods/             Lecture de assets/periods_*.json
+data/calendar/            Téléchargement ICS, cours Room, état de synchro
+work/                     CalendarSyncWorker (WorkManager, quotidien)
 ui/settings/              Écran Réglages
 ```
 À créer plus tard :
 ```
-data/calendar/            Téléchargement + parsing ICS (ADE), stockage des cours
-domain/                   Logique pure (testable JVM) : type de journée, calcul réveil,
-                          recherche de créneaux libres, cycles de sommeil
+domain/                   Logique pure (testable JVM) : recherche de créneaux libres
 alarm/                    AlarmManager.setAlarmClock, receivers (alarme, boot), canal notif
-work/                     WorkManager : synchro ICS quotidienne 6h, planification des notifs
+work/                     WorkManager : planification des notifs
 ui/session/               Caméra frontale (CameraX) + chrono d'une session d'activité
 ui/habits/                Écran d'édition des activités
 ```
@@ -66,7 +70,11 @@ ui/habits/                Écran d'édition des activités
 ## Données
 - `app/src/main/assets/periods_4a_2026_2027.json` : périodes école/entreprise/fériés
   extraites du calendrier 4A (couleurs des cellules du .docx). Cases gris foncé = école.
-- Fichier ICS d'exemple : non commité (données perso). Format ADE observé :
+- Fichier ICS réel : non commité (données perso). Fixture synthétique :
+  `app/src/test/resources/sample_ade.ics`. Test sur le vrai export :
+  `ADE_ICS=/chemin/ADECal.ics ./gradlew testDebugUnitTest` (`RealIcsTest`).
+- Debug uniquement : HTTP autorisé vers `10.0.2.2` (hôte de l'émulateur) pour
+  tester la synchro avec un serveur local (`src/debug/res/xml/network_security_config.xml`). Format ADE observé :
   `SUMMARY` = matière, `LOCATION` = salle, `DESCRIPTION` = groupes + enseignant
   (`IT4 FISA`, `IT4 FISA - Cyber`, `IT4 FISA - IOT`…). L'export contient des cours
   de plusieurs groupes qui se chevauchent → filtrage par groupe nécessaire (voir SPEC).

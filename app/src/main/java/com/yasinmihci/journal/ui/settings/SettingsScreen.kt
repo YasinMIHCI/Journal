@@ -49,13 +49,17 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yasinmihci.journal.R
+import com.yasinmihci.journal.data.calendar.SyncState
+import com.yasinmihci.journal.domain.calendar.PARIS
 import com.yasinmihci.journal.domain.settings.AppSettings
 import com.yasinmihci.journal.ui.common.showTimePicker
 import com.yasinmihci.journal.domain.settings.CompanyDay
 import com.yasinmihci.journal.ui.format.formatDuration
 import com.yasinmihci.journal.ui.format.formatTime
 import java.time.DayOfWeek
+import java.time.Instant
 import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
 
@@ -84,6 +88,8 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory),
 ) {
     val settings by viewModel.settings.collectAsStateWithLifecycle()
+    val syncState by viewModel.syncState.collectAsStateWithLifecycle()
+    val syncing by viewModel.syncing.collectAsStateWithLifecycle()
     var edit by remember { mutableStateOf<Edit?>(null) }
 
     Scaffold(
@@ -107,7 +113,13 @@ fun SettingsScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(bottom = 16.dp),
         ) {
-            SettingsContent(s, update = viewModel::update, openEdit = { edit = it })
+            SettingsContent(
+                s,
+                update = viewModel::update,
+                openEdit = { edit = it },
+                syncStatus = syncStatusText(syncState, syncing),
+                onSync = viewModel::syncNow,
+            )
         }
     }
 
@@ -121,6 +133,8 @@ private fun SettingsContent(
     s: AppSettings,
     update: ((AppSettings) -> AppSettings) -> Unit,
     openEdit: (Edit) -> Unit,
+    syncStatus: String,
+    onSync: () -> Unit,
 ) {
     val context = LocalContext.current
     @Composable
@@ -171,12 +185,37 @@ private fun SettingsContent(
         })
     }
     time(R.string.settings_sync_time, s.syncTime) { a, t -> a.copy(syncTime = t) }
+    ListItem(
+        headlineContent = { Text(stringResource(R.string.settings_sync_now)) },
+        supportingContent = { Text(syncStatus) },
+        modifier = Modifier.clickable(onClick = onSync),
+    )
 
     // Activités
     Section(R.string.settings_activities)
     time(R.string.settings_window_start, s.activityWindowStart) { a, t -> a.copy(activityWindowStart = t) }
     time(R.string.settings_window_end, s.activityWindowEnd) { a, t -> a.copy(activityWindowEnd = t) }
     MinutesRow(R.string.settings_min_slot, s.minSlotMinutes, openEdit) { v -> update { it.copy(minSlotMinutes = v) } }
+}
+
+@Composable
+private fun syncStatusText(state: SyncState?, syncing: Boolean): String = when {
+    syncing -> stringResource(R.string.sync_running)
+    state == null -> ""
+    state.lastError != null -> stringResource(R.string.sync_error, state.lastError)
+    state.lastSuccessMs != null -> stringResource(
+        R.string.sync_ok,
+        state.courses,
+        formatDateTime(Instant.ofEpochMilli(state.lastSuccessMs)),
+    )
+    else -> stringResource(R.string.sync_never)
+}
+
+private val SYNC_DAY = DateTimeFormatter.ofPattern("d MMM", Locale.FRENCH)
+
+private fun formatDateTime(instant: Instant): String {
+    val z = instant.atZone(PARIS)
+    return "${z.format(SYNC_DAY)} ${formatTime(z.toLocalTime())}"
 }
 
 @Composable

@@ -1,6 +1,8 @@
 package com.yasinmihci.journal.di
 
 import android.content.Context
+import com.yasinmihci.journal.data.calendar.CalendarRepository
+import com.yasinmihci.journal.data.calendar.SyncStateRepository
 import com.yasinmihci.journal.data.local.AppDatabase
 import com.yasinmihci.journal.data.repository.HabitRepository
 import com.yasinmihci.journal.data.repository.JournalRepository
@@ -23,4 +25,6 @@ class AppContainer(context: Context) {
     val settingsRepository = SettingsRepository.create(context)
     val bedtimeRepository = BedtimeRepository.create(context)
     val periodsRepository = PeriodsRepository(context.applicationContext)
+    val syncStateRepository = SyncStateRepository.create(context)
+    val calendarRepository = CalendarRepository(database.courseDao(), settingsRepository, syncStateRepository)
 }

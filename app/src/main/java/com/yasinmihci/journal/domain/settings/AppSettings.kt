@@ -24,8 +24,8 @@ data class AppSettings(
     val maxSleepCycles: Int = 6,
     val weekendLatestWake: LocalTime = LocalTime.of(10, 30),
     val icsUrl: String = "",
-    /** Groupes ADE gardés (champ DESCRIPTION de l'ICS). */
-    val icsGroups: List<String> = listOf("IT4 FISA", "IT4 FISA - Cyber"),
+    /** Groupes ADE gardés : une ligne de DESCRIPTION doit être exactement l'un d'eux. */
+    val icsGroups: List<String> = listOf("IT4 FISA", "IT4 FISA - Cyber", "4A"),
     val syncTime: LocalTime = LocalTime.of(6, 0),
     /** Fenêtre de recherche des créneaux libres pour les activités. */
     val activityWindowStart: LocalTime = LocalTime.of(8, 0),
