@@ -34,6 +34,15 @@ class CalendarRepository(
         }
     }
 
+    /** Cours de [from] (inclus) à [toExclusive], filtrés par groupe. */
+    suspend fun coursesBetween(from: LocalDate, toExclusive: LocalDate): List<Course> {
+        val groups = settings.current().icsGroups
+        return dao.between(
+            from.atStartOfDay(PARIS).toInstant().toEpochMilli(),
+            toExclusive.atStartOfDay(PARIS).toInstant().toEpochMilli(),
+        ).map { it.toCourse() }.filter { it.matches(groups) }
+    }
+
     /**
      * Télécharge l'ICS et remplace les cours stockés. En cas d'erreur, les cours existants sont gardés.
      * @return nombre de cours gardés après filtre.

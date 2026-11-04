@@ -11,6 +11,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStoreFile
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.io.IOException
 import java.time.LocalDate
@@ -29,6 +30,8 @@ class BedtimeRepository(private val dataStore: DataStore<Preferences>) {
             val minutes = prefs[TIME] ?: return@map null
             Bedtime(date, LocalTime.of(minutes / 60, minutes % 60))
         }
+
+    suspend fun current(): Bedtime? = bedtime.first()
 
     suspend fun set(bedtime: Bedtime) {
         dataStore.edit {

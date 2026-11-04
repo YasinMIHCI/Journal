@@ -10,6 +10,7 @@
         android:maxSdkVersion="32" />                                             <!-- réveil, Android 12 -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />  <!-- replanifier après reboot -->
     <uses-permission android:name="android.permission.CAMERA" />                  <!-- session activité -->
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" /> <!-- sonnerie écran verrouillé -->
 
     <uses-feature
         android:name="android.hardware.camera.front"
@@ -32,6 +33,33 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Sonnerie : par-dessus l'écran verrouillé, hors de la tâche principale -->
+        <activity
+            android:name=".alarm.AlarmActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:launchMode="singleInstance"
+            android:showWhenLocked="true"
+            android:taskAffinity=""
+            android:turnScreenOn="true" />
+
+        <receiver
+            android:name=".alarm.AlarmReceiver"
+            android:exported="false" />
+
+        <!-- Reprogramme les alarmes après redémarrage, mise à jour, changement d'heure -->
+        <receiver
+            android:name=".alarm.SystemEventsReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

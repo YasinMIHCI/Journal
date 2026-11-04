@@ -46,12 +46,14 @@ domain/calendar/          Course + parser ICS (IcsParser), filtre par groupe
 data/periods/             Lecture de assets/periods_*.json
 data/calendar/            Téléchargement ICS, cours Room, état de synchro
 work/                     CalendarSyncWorker (WorkManager, quotidien)
+domain/day/AlarmPlanner   Prochain réveil / départ (pur, testé)
+alarm/                    AlarmScheduler (setAlarmClock), receivers (alarme, boot/heure),
+                          notifications, AlarmActivity (sonnerie), permissions
 ui/settings/              Écran Réglages
 ```
 À créer plus tard :
 ```
 domain/                   Logique pure (testable JVM) : recherche de créneaux libres
-alarm/                    AlarmManager.setAlarmClock, receivers (alarme, boot), canal notif
 work/                     WorkManager : planification des notifs
 ui/session/               Caméra frontale (CameraX) + chrono d'une session d'activité
 ui/habits/                Écran d'édition des activités

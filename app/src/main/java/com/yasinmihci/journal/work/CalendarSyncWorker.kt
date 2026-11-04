@@ -21,7 +21,9 @@ class CalendarSyncWorker(context: Context, params: WorkerParameters) : Coroutine
 
     override suspend fun doWork(): Result {
         val container = (applicationContext as JournalApplication).container
-        return when (container.calendarRepository.sync()) {
+        val outcome = container.calendarRepository.sync()
+        container.alarmScheduler.reschedule()
+        return when (outcome) {
             is SyncOutcome.Success, SyncOutcome.NoUrl -> Result.success()
             // Réseau absent / serveur indisponible : WorkManager réessaie (backoff exponentiel).
             is SyncOutcome.Error -> if (runAttemptCount < 5) Result.retry() else Result.failure()

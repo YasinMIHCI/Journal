@@ -24,6 +24,17 @@ Source : `assets/periods_4a_2026_2027.json` (modifiable dans l'app).
 - Coucher ≥ midi = veille au soir ; < midi = après minuit.
 - Moins d'un cycle possible ou coucher non saisi → réveil à 10h30.
 
+### Alarmes
+- Réveil : `AlarmManager.setAlarmClock` (exact, traverse Doze, visible par le système).
+  Sonnerie = notification canal « Réveil » (son d'alarme en boucle, vibration) +
+  écran plein par-dessus le verrouillage ; « Arrêter » ; coupure auto après 10 min.
+- Départ : notification à l'heure de départ (alarme exacte).
+- Une alarme de chaque type programmée à la fois (la prochaine sur 8 jours),
+  recalculée à chaque changement (réglages, coucher, synchro), après chaque
+  sonnerie, au redémarrage du téléphone et au changement d'heure.
+- Jours libres sans coucher saisi : réveil à l'heure « au plus tard » (10h30).
+- Réveil et rappel de départ désactivables dans Réglages.
+
 ### Type de journée
 Priorité : week-end > férié > école > entreprise ; hors périodes = libre.
 

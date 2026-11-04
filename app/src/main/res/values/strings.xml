@@ -56,4 +56,21 @@
     <string name="sync_error">Erreur : %1$s</string>
     <string name="section_courses">Cours</string>
     <string name="course_time">%1$s–%2$s</string>
+    <string name="channel_wake">Réveil</string>
+    <string name="channel_departure">Départ</string>
+    <string name="wake_title">Réveil</string>
+    <string name="wake_text">Debout !</string>
+    <string name="wake_text_departure">Départ à %1$s</string>
+    <string name="wake_stop">Arrêter</string>
+    <string name="departure_title">Départ</string>
+    <string name="departure_text">C’est l’heure de partir.</string>
+    <string name="settings_alarms">Alarmes</string>
+    <string name="settings_wake_alarm">Réveil</string>
+    <string name="settings_departure_reminder">Rappel de départ</string>
+    <string name="next_wake">Prochain : %1$s</string>
+    <string name="next_none">Aucun</string>
+    <string name="perm_notifications">Notifications désactivées : le réveil ne sonnera pas</string>
+    <string name="perm_exact">Alarmes exactes non autorisées</string>
+    <string name="perm_full_screen">Plein écran non autorisé : pas d’écran de réveil verrouillé</string>
+    <string name="perm_fix">Toucher pour corriger</string>
 </resources>

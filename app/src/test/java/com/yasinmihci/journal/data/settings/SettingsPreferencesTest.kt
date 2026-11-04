@@ -39,6 +39,8 @@ class SettingsPreferencesTest {
             activityWindowStart = LocalTime.of(9, 0),
             activityWindowEnd = LocalTime.of(21, 30),
             minSlotMinutes = 45,
+            wakeAlarmEnabled = false,
+            departureReminderEnabled = false,
         )
         val prefs = mutablePreferencesOf().apply { write(custom) }
         assertEquals(custom, prefs.toAppSettings())

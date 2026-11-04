@@ -1,6 +1,7 @@
 package com.yasinmihci.journal.di
 
 import android.content.Context
+import com.yasinmihci.journal.alarm.AlarmScheduler
 import com.yasinmihci.journal.data.calendar.CalendarRepository
 import com.yasinmihci.journal.data.calendar.SyncStateRepository
 import com.yasinmihci.journal.data.local.AppDatabase
@@ -27,4 +28,11 @@ class AppContainer(context: Context) {
     val periodsRepository = PeriodsRepository(context.applicationContext)
     val syncStateRepository = SyncStateRepository.create(context)
     val calendarRepository = CalendarRepository(database.courseDao(), settingsRepository, syncStateRepository)
+    val alarmScheduler = AlarmScheduler(
+        context.applicationContext,
+        settingsRepository,
+        bedtimeRepository,
+        periodsRepository,
+        calendarRepository,
+    )
 }

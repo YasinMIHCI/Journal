@@ -25,6 +25,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -46,10 +47,13 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yasinmihci.journal.R
+import com.yasinmihci.journal.alarm.AlarmPermission
 import com.yasinmihci.journal.data.calendar.SyncState
+import com.yasinmihci.journal.domain.day.NextAlarms
 import com.yasinmihci.journal.domain.calendar.PARIS
 import com.yasinmihci.journal.domain.settings.AppSettings
 import com.yasinmihci.journal.ui.common.showTimePicker
@@ -59,6 +63,7 @@ import com.yasinmihci.journal.ui.format.formatTime
 import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalTime
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
@@ -90,6 +95,7 @@ fun SettingsScreen(
     val settings by viewModel.settings.collectAsStateWithLifecycle()
     val syncState by viewModel.syncState.collectAsStateWithLifecycle()
     val syncing by viewModel.syncing.collectAsStateWithLifecycle()
+    val nextAlarms by viewModel.nextAlarms.collectAsStateWithLifecycle()
     var edit by remember { mutableStateOf<Edit?>(null) }
 
     Scaffold(
@@ -119,6 +125,7 @@ fun SettingsScreen(
                 openEdit = { edit = it },
                 syncStatus = syncStatusText(syncState, syncing),
                 onSync = viewModel::syncNow,
+                nextAlarms = nextAlarms,
             )
         }
     }
@@ -135,11 +142,22 @@ private fun SettingsContent(
     openEdit: (Edit) -> Unit,
     syncStatus: String,
     onSync: () -> Unit,
+    nextAlarms: NextAlarms?,
 ) {
     val context = LocalContext.current
     @Composable
     fun time(label: Int, value: LocalTime, set: (AppSettings, LocalTime) -> AppSettings) =
         Row3(label, formatTime(value)) { showTimePicker(context, value) { t -> update { set(it, t) } } }
+
+    // Alarmes
+    Section(R.string.settings_alarms)
+    PermissionWarnings()
+    SwitchRow(R.string.settings_wake_alarm, s.wakeAlarmEnabled, nextAlarmText(nextAlarms?.wake)) { v ->
+        update { it.copy(wakeAlarmEnabled = v) }
+    }
+    SwitchRow(R.string.settings_departure_reminder, s.departureReminderEnabled, nextAlarmText(nextAlarms?.departure)) { v ->
+        update { it.copy(departureReminderEnabled = v) }
+    }
 
     // Entreprise
     Section(R.string.settings_company)
@@ -199,6 +217,50 @@ private fun SettingsContent(
 }
 
 @Composable
+private fun SwitchRow(label: Int, checked: Boolean, supporting: String, onChange: (Boolean) -> Unit) {
+    ListItem(
+        headlineContent = { Text(stringResource(label)) },
+        supportingContent = { Text(supporting) },
+        trailingContent = { Switch(checked = checked, onCheckedChange = onChange) },
+        modifier = Modifier.clickable { onChange(!checked) },
+    )
+}
+
+@Composable
+private fun nextAlarmText(at: ZonedDateTime?): String =
+    if (at == null) stringResource(R.string.next_none)
+    else stringResource(R.string.next_wake, formatDateTime(at.toInstant()))
+
+/** Autorisations manquantes, revérifiées à chaque retour sur l'écran. */
+@Composable
+private fun PermissionWarnings() {
+    val context = LocalContext.current
+    var missing by remember { mutableStateOf(emptyList<AlarmPermission>()) }
+    LifecycleResumeEffect(Unit) {
+        missing = AlarmPermission.entries.filterNot { it.isGranted(context) }
+        onPauseOrDispose { }
+    }
+    missing.forEach { p ->
+        ListItem(
+            headlineContent = {
+                Text(
+                    stringResource(
+                        when (p) {
+                            AlarmPermission.NOTIFICATIONS -> R.string.perm_notifications
+                            AlarmPermission.EXACT_ALARMS -> R.string.perm_exact
+                            AlarmPermission.FULL_SCREEN -> R.string.perm_full_screen
+                        },
+                    ),
+                    color = MaterialTheme.colorScheme.error,
+                )
+            },
+            supportingContent = { Text(stringResource(R.string.perm_fix)) },
+            modifier = Modifier.clickable { context.startActivity(p.settingsIntent(context)) },
+        )
+    }
+}
+
+@Composable
 private fun syncStatusText(state: SyncState?, syncing: Boolean): String = when {
     syncing -> stringResource(R.string.sync_running)
     state == null -> ""
@@ -211,7 +273,7 @@ private fun syncStatusText(state: SyncState?, syncing: Boolean): String = when {
     else -> stringResource(R.string.sync_never)
 }
 
-private val SYNC_DAY = DateTimeFormatter.ofPattern("d MMM", Locale.FRENCH)
+private val SYNC_DAY = DateTimeFormatter.ofPattern("EEE d MMM", Locale.FRENCH)
 
 private fun formatDateTime(instant: Instant): String {
     val z = instant.atZone(PARIS)

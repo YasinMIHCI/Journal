@@ -31,6 +31,8 @@ data class AppSettings(
     val activityWindowStart: LocalTime = LocalTime.of(8, 0),
     val activityWindowEnd: LocalTime = LocalTime.of(20, 0),
     val minSlotMinutes: Int = 30,
+    val wakeAlarmEnabled: Boolean = true,
+    val departureReminderEnabled: Boolean = true,
 ) {
     fun companyDay(day: DayOfWeek): CompanyDay =
         companyDays[day] ?: DEFAULT_COMPANY_DAYS.getValue(day)

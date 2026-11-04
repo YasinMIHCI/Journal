@@ -2,6 +2,7 @@ package com.yasinmihci.journal.data.settings
 
 import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.yasinmihci.journal.domain.settings.AppSettings
@@ -25,6 +26,8 @@ private val SYNC_TIME = intPreferencesKey("sync_time")
 private val ACTIVITY_START = intPreferencesKey("activity_window_start")
 private val ACTIVITY_END = intPreferencesKey("activity_window_end")
 private val MIN_SLOT = intPreferencesKey("min_slot_min")
+private val WAKE_ALARM = booleanPreferencesKey("wake_alarm_enabled")
+private val DEPARTURE_REMINDER = booleanPreferencesKey("departure_reminder_enabled")
 
 private fun LocalTime.toMinutes(): Int = hour * 60 + minute
 private fun Int.toTime(): LocalTime = LocalTime.of((this / 60).coerceIn(0, 23), (this % 60).coerceIn(0, 59))
@@ -55,6 +58,8 @@ fun Preferences.toAppSettings(): AppSettings {
         activityWindowStart = time(ACTIVITY_START, d.activityWindowStart),
         activityWindowEnd = time(ACTIVITY_END, d.activityWindowEnd),
         minSlotMinutes = this[MIN_SLOT] ?: d.minSlotMinutes,
+        wakeAlarmEnabled = this[WAKE_ALARM] ?: d.wakeAlarmEnabled,
+        departureReminderEnabled = this[DEPARTURE_REMINDER] ?: d.departureReminderEnabled,
     )
 }
 
@@ -77,4 +82,6 @@ fun MutablePreferences.write(s: AppSettings) {
     this[ACTIVITY_START] = s.activityWindowStart.toMinutes()
     this[ACTIVITY_END] = s.activityWindowEnd.toMinutes()
     this[MIN_SLOT] = s.minSlotMinutes
+    this[WAKE_ALARM] = s.wakeAlarmEnabled
+    this[DEPARTURE_REMINDER] = s.departureReminderEnabled
 }

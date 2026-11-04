@@ -10,6 +10,7 @@ import com.yasinmihci.journal.data.calendar.CalendarRepository
 import com.yasinmihci.journal.data.calendar.SyncState
 import com.yasinmihci.journal.data.calendar.SyncStateRepository
 import com.yasinmihci.journal.data.settings.SettingsRepository
+import com.yasinmihci.journal.domain.day.NextAlarms
 import com.yasinmihci.journal.domain.settings.AppSettings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,6 +24,8 @@ class SettingsViewModel(
     private val appScope: CoroutineScope,
     private val calendarRepository: CalendarRepository,
     syncStateRepository: SyncStateRepository,
+    /** Alarmes programmées (null tant que pas calculé). */
+    val nextAlarms: StateFlow<NextAlarms?>,
 ) : ViewModel() {
 
     /** Null tant que les réglages ne sont pas lus : évite d'éditer les valeurs par défaut. */
@@ -60,6 +63,7 @@ class SettingsViewModel(
                     container.appScope,
                     container.calendarRepository,
                     container.syncStateRepository,
+                    container.alarmScheduler.next,
                 )
             }
         }
