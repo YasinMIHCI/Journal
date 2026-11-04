@@ -62,7 +62,7 @@ ui/settings/, ui/habits/  Écrans d'édition
 
 ## Données
 - `app/src/main/assets/periods_4a_2026_2027.json` : périodes école/entreprise/fériés
-  extraites du calendrier 4A (couleurs des cellules du .docx). Catégorie `other` à confirmer.
+  extraites du calendrier 4A (couleurs des cellules du .docx). Cases gris foncé = école.
 - Fichier ICS d'exemple : non commité (données perso). Format ADE observé :
   `SUMMARY` = matière, `LOCATION` = salle, `DESCRIPTION` = groupes + enseignant
   (`IT4 FISA`, `IT4 FISA - Cyber`, `IT4 FISA - IOT`…). L'export contient des cours

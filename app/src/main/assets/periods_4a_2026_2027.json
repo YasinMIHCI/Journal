@@ -1,12 +1,14 @@
 {
   "source": "Calendrier_4A_FISA_Cyber_2026-2027_Polytech_Dijon.docx",
-  "note": "Dates incluses. Week-ends non couverts. 'other' = cases gris foncé, signification à confirmer.",
+  "note": "Dates incluses. Week-ends non couverts. Cases gris foncé (3-7 mai, 1-3 sept. 2027) = école.",
   "school": [
     { "start": "2026-08-31", "end": "2026-10-02" },
     { "start": "2026-11-16", "end": "2026-12-18" },
     { "start": "2027-01-18", "end": "2027-02-05" },
     { "start": "2027-03-15", "end": "2027-04-02" },
-    { "start": "2027-05-10", "end": "2027-05-21" }
+    { "start": "2027-05-03", "end": "2027-05-07" },
+    { "start": "2027-05-10", "end": "2027-05-21" },
+    { "start": "2027-09-01", "end": "2027-09-03" }
   ],
   "company": [
     { "start": "2026-10-05", "end": "2026-11-13" },
@@ -14,10 +16,6 @@
     { "start": "2027-02-08", "end": "2027-03-12" },
     { "start": "2027-04-05", "end": "2027-04-30" },
     { "start": "2027-05-24", "end": "2027-08-31" }
-  ],
-  "other": [
-    { "start": "2027-05-03", "end": "2027-05-07" },
-    { "start": "2027-09-01", "end": "2027-09-03" }
   ],
   "holidays": [
     "2026-11-01", "2026-11-11", "2026-12-25", "2027-01-01", "2027-03-29",

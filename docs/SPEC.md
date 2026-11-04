@@ -39,9 +39,9 @@ Source : `assets/periods_4a_2026_2027.json` (modifiable dans l'app).
 - Tous les paramètres modifiables dans l'app.
 - UI simple, textes courts.
 
-## Questions ouvertes
-- [ ] Partage « agenda » ADE : donne-t-il une URL ICS (synchro auto) ou seulement un fichier ?
-- [ ] Filtrer les cours `IT4 FISA - IOT` (garder `IT4 FISA` + `IT4 FISA - Cyber`) ?
-- [ ] Cases gris foncé du calendrier 4A (3-7 mai 2027, 1-3 sept. 2027) : école, entreprise, autre ?
-- [ ] Notifs activités : fréquence max / jour, durée d'un créneau proposé ?
-- [ ] Semaine = lundi → dimanche ?
+## Décisions (ex-questions ouvertes)
+- [x] Partage « agenda » ADE : Partage → Agenda donne une URL ICS directe, saisie dans les réglages.
+- [x] Groupes gardés : IT4 Cyber → `IT4 FISA` (tronc commun) + `IT4 FISA - Cyber` ; `IT4 FISA - IOT` exclu. Filtre modifiable dans les réglages.
+- [x] Cases gris foncé (3-7 mai 2027, 1-3 sept. 2027) : école.
+- [x] Notifs activités : pas de limite par jour, à chaque créneau libre. Durée min. d'un créneau : réglage (défaut 30 min).
+- [x] Semaine = lundi → dimanche.
