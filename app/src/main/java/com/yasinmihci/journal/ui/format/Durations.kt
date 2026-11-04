@@ -10,3 +10,7 @@ fun formatDuration(minutes: Int): String {
         else -> "$h h ${m.toString().padStart(2, '0')}"
     }
 }
+
+/** 6:15 → "6h15", 18:00 → "18h00". */
+fun formatTime(time: java.time.LocalTime): String =
+    "${time.hour}h${time.minute.toString().padStart(2, '0')}"

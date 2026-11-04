@@ -14,7 +14,8 @@ Spécification complète : `docs/SPEC.md`. Lire avant toute nouvelle fonctionnal
 - Kotlin, Jetpack Compose (Material 3), un seul module `:app`.
 - minSdk 26, targetSdk/compileSdk 35, JDK 17, AGP 8.7.3, Kotlin 2.1.0, Gradle 8.11.1.
 - Room (KSP) pour les données. Versions dans `gradle/libs.versions.toml`.
-- Prévu (déjà dans le catalogue, pas encore branché) : WorkManager, CameraX, DataStore.
+- DataStore Preferences : réglages (`data/settings`, modèle `domain/settings/AppSettings`).
+- Prévu (déjà dans le catalogue, pas encore branché) : WorkManager, CameraX.
 - DI manuelle : `di/AppContainer.kt` (créé par `JournalApplication`). Pas de Hilt.
 
 ## Commandes
@@ -37,17 +38,19 @@ data/repository/          Accès données pour l'UI (JournalRepository, HabitRep
 ui/theme/                 Thème Material 3 (couleurs dynamiques)
 ui/format/                Formatage (durées…)
 ui/today/                 Écran principal : activités + journal du jour
+data/settings/            DataStore : tous les réglages (AppSettings)
+domain/settings/          AppSettings (modèle + valeurs par défaut)
+ui/settings/              Écran Réglages
 ```
 À créer plus tard :
 ```
 data/calendar/            Téléchargement + parsing ICS (ADE), stockage des cours
-data/settings/            DataStore : horaires, trajets, URL ICS, heures de coucher…
 domain/                   Logique pure (testable JVM) : type de journée, calcul réveil,
                           recherche de créneaux libres, cycles de sommeil
 alarm/                    AlarmManager.setAlarmClock, receivers (alarme, boot), canal notif
 work/                     WorkManager : synchro ICS quotidienne 6h, planification des notifs
 ui/session/               Caméra frontale (CameraX) + chrono d'une session d'activité
-ui/settings/, ui/habits/  Écrans d'édition
+ui/habits/                Écran d'édition des activités
 ```
 
 ## Conventions

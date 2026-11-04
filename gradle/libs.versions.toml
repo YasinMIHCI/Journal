@@ -11,7 +11,7 @@ junit = "4.13.2"
 # Prévu pour la suite (pas encore utilisé dans app/build.gradle.kts)
 work = "2.10.0"
 camerax = "1.4.1"
-datastore = "1.1.1"
+datastore = "1.1.1"  # branché
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }

@@ -4,6 +4,7 @@ import android.content.Context
 import com.yasinmihci.journal.data.local.AppDatabase
 import com.yasinmihci.journal.data.repository.HabitRepository
 import com.yasinmihci.journal.data.repository.JournalRepository
+import com.yasinmihci.journal.data.settings.SettingsRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -17,4 +18,5 @@ class AppContainer(context: Context) {
 
     val journalRepository = JournalRepository(database.journalDao(), appScope)
     val habitRepository = HabitRepository(database.habitDao())
+    val settingsRepository = SettingsRepository.create(context)
 }

@@ -15,6 +15,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -42,7 +43,10 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 @Composable
-fun TodayScreen(viewModel: TodayViewModel = viewModel(factory = TodayViewModel.Factory)) {
+fun TodayScreen(
+    onOpenSettings: () -> Unit,
+    viewModel: TodayViewModel = viewModel(factory = TodayViewModel.Factory),
+) {
     val habits by viewModel.habits.collectAsStateWithLifecycle()
     TodayContent(
         date = viewModel.date,
@@ -54,6 +58,7 @@ fun TodayScreen(viewModel: TodayViewModel = viewModel(factory = TodayViewModel.F
         onNextDay = { viewModel.shiftDay(1) },
         onToday = viewModel::goToToday,
         onJournalChange = viewModel::onJournalChange,
+        onOpenSettings = onOpenSettings,
     )
 }
 
@@ -69,6 +74,7 @@ private fun TodayContent(
     onNextDay: () -> Unit,
     onToday: () -> Unit,
     onJournalChange: (String) -> Unit,
+    onOpenSettings: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -102,6 +108,9 @@ private fun TodayContent(
                             Icons.AutoMirrored.Filled.KeyboardArrowRight,
                             contentDescription = stringResource(R.string.next_day),
                         )
+                    }
+                    IconButton(onClick = onOpenSettings) {
+                        Icon(Icons.Filled.Settings, contentDescription = stringResource(R.string.settings))
                     }
                 },
             )
@@ -181,7 +190,7 @@ private fun TodayEmptyPreview() {
         TodayContent(
             date = LocalDate.of(2026, 11, 4), isToday = true, habits = emptyList(),
             journalText = "", journalLoaded = true,
-            onPreviousDay = {}, onNextDay = {}, onToday = {}, onJournalChange = {},
+            onPreviousDay = {}, onNextDay = {}, onToday = {}, onJournalChange = {}, onOpenSettings = {},
         )
     }
 }
@@ -194,7 +203,7 @@ private fun TodayFilledPreview() {
             date = LocalDate.of(2026, 11, 4), isToday = false,
             habits = listOf(HabitEntity(1, "Piano", 60), HabitEntity(2, "Dessin", 90)),
             journalText = "Cours de réseau, 30 min de piano.", journalLoaded = true,
-            onPreviousDay = {}, onNextDay = {}, onToday = {}, onJournalChange = {},
+            onPreviousDay = {}, onNextDay = {}, onToday = {}, onJournalChange = {}, onOpenSettings = {},
         )
     }
 }

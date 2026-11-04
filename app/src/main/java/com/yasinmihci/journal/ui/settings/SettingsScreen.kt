@@ -1,0 +1,298 @@
+package com.yasinmihci.journal.ui.settings
+
+import android.app.TimePickerDialog
+import android.content.Context
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.yasinmihci.journal.R
+import com.yasinmihci.journal.domain.settings.AppSettings
+import com.yasinmihci.journal.domain.settings.CompanyDay
+import com.yasinmihci.journal.ui.format.formatDuration
+import com.yasinmihci.journal.ui.format.formatTime
+import java.time.DayOfWeek
+import java.time.LocalTime
+import java.time.format.TextStyle
+import java.util.Locale
+
+/** Dialogue d'édition ouvert (texte ou durée). Les heures passent par le TimePickerDialog système. */
+private sealed interface Edit {
+    val title: Int
+    data class Minutes(override val title: Int, val initial: Int, val onSet: (Int) -> Unit) : Edit
+    data class Text(
+        override val title: Int,
+        val initial: String,
+        val multiline: Boolean,
+        val onSet: (String) -> Unit,
+    ) : Edit
+}
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@Composable
+fun SettingsScreen(
+    onBack: () -> Unit,
+    viewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory),
+) {
+    val settings by viewModel.settings.collectAsStateWithLifecycle()
+    var edit by remember { mutableStateOf<Edit?>(null) }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.settings)) },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
+                    }
+                },
+            )
+        },
+    ) { innerPadding ->
+        val s = settings ?: return@Scaffold
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .consumeWindowInsets(innerPadding)
+                .verticalScroll(rememberScrollState())
+                .padding(bottom = 16.dp),
+        ) {
+            SettingsContent(s, update = viewModel::update, openEdit = { edit = it })
+        }
+    }
+
+    edit?.let { e ->
+        EditDialog(e, onDismiss = { edit = null })
+    }
+}
+
+@Composable
+private fun SettingsContent(
+    s: AppSettings,
+    update: ((AppSettings) -> AppSettings) -> Unit,
+    openEdit: (Edit) -> Unit,
+) {
+    val context = LocalContext.current
+    @Composable
+    fun time(label: Int, value: LocalTime, set: (AppSettings, LocalTime) -> AppSettings) =
+        Row3(label, formatTime(value)) { pickTime(context, value) { t -> update { set(it, t) } } }
+
+    // Entreprise
+    Section(R.string.settings_company)
+    CompanyHeader()
+    AppSettings.WORK_DAYS.forEach { day ->
+        CompanyRow(day, s.companyDay(day)) { field, initial ->
+            pickTime(context, initial) { t ->
+                update { cur ->
+                    val c = cur.companyDay(day)
+                    val new = when (field) {
+                        0 -> c.copy(wake = t)
+                        1 -> c.copy(departure = t)
+                        else -> c.copy(back = t)
+                    }
+                    cur.copy(companyDays = cur.companyDays + (day to new))
+                }
+            }
+        }
+    }
+
+    // École
+    Section(R.string.settings_school)
+    MinutesRow(R.string.settings_school_travel, s.schoolTravelMinutes, openEdit) { v -> update { it.copy(schoolTravelMinutes = v) } }
+    MinutesRow(R.string.settings_school_prep, s.schoolPrepMinutes, openEdit) { v -> update { it.copy(schoolPrepMinutes = v) } }
+
+    // Week-end
+    Section(R.string.settings_weekend)
+    MinutesRow(R.string.settings_sleep_cycle, s.sleepCycleMinutes, openEdit) { v -> update { it.copy(sleepCycleMinutes = v) } }
+    MinutesRow(R.string.settings_fall_asleep, s.fallAsleepMinutes, openEdit) { v -> update { it.copy(fallAsleepMinutes = v) } }
+    time(R.string.settings_latest_wake, s.weekendLatestWake) { a, t -> a.copy(weekendLatestWake = t) }
+
+    // Emploi du temps
+    Section(R.string.settings_calendar)
+    Row3(R.string.settings_ics_url, s.icsUrl.ifBlank { stringResource(R.string.settings_empty) }) {
+        openEdit(Edit.Text(R.string.settings_ics_url, s.icsUrl, multiline = false) { v -> update { it.copy(icsUrl = v.trim()) } })
+    }
+    Row3(R.string.settings_ics_groups, s.icsGroups.joinToString(", ").ifBlank { stringResource(R.string.settings_empty) }) {
+        openEdit(Edit.Text(R.string.settings_ics_groups, s.icsGroups.joinToString("\n"), multiline = true) { v ->
+            update { it.copy(icsGroups = v.lines().map(String::trim).filter(String::isNotEmpty)) }
+        })
+    }
+    time(R.string.settings_sync_time, s.syncTime) { a, t -> a.copy(syncTime = t) }
+
+    // Activités
+    Section(R.string.settings_activities)
+    time(R.string.settings_window_start, s.activityWindowStart) { a, t -> a.copy(activityWindowStart = t) }
+    time(R.string.settings_window_end, s.activityWindowEnd) { a, t -> a.copy(activityWindowEnd = t) }
+    MinutesRow(R.string.settings_min_slot, s.minSlotMinutes, openEdit) { v -> update { it.copy(minSlotMinutes = v) } }
+}
+
+@Composable
+private fun Section(title: Int) {
+    HorizontalDivider(Modifier.padding(top = 8.dp))
+    Text(
+        stringResource(title),
+        style = MaterialTheme.typography.titleSmall,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 4.dp),
+    )
+}
+
+@Composable
+private fun Row3(label: Int, value: String, onClick: () -> Unit) {
+    ListItem(
+        headlineContent = { Text(stringResource(label)) },
+        trailingContent = {
+            Text(value, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.widthIn(max = 180.dp))
+        },
+        modifier = Modifier.clickable(onClick = onClick),
+    )
+}
+
+@Composable
+private fun MinutesRow(label: Int, value: Int, openEdit: (Edit) -> Unit, onSet: (Int) -> Unit) {
+    Row3(label, formatDuration(value)) { openEdit(Edit.Minutes(label, value, onSet)) }
+}
+
+private val COL = 72.dp
+
+@Composable
+private fun CompanyHeader() {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.End,
+    ) {
+        listOf(R.string.settings_wake, R.string.settings_departure, R.string.settings_back).forEach {
+            Text(
+                stringResource(it),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.width(COL),
+            )
+        }
+    }
+}
+
+@Composable
+private fun CompanyRow(day: DayOfWeek, c: CompanyDay, onPick: (field: Int, initial: LocalTime) -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            day.getDisplayName(TextStyle.FULL, Locale.FRENCH).replaceFirstChar { it.titlecase(Locale.FRENCH) },
+            modifier = Modifier.weight(1f),
+        )
+        listOf(c.wake, c.departure, c.back).forEachIndexed { i, t ->
+            TextButton(onClick = { onPick(i, t) }, modifier = Modifier.width(COL)) { Text(formatTime(t)) }
+        }
+    }
+}
+
+private fun pickTime(context: Context, initial: LocalTime, onSet: (LocalTime) -> Unit) {
+    TimePickerDialog(context, { _, h, m -> onSet(LocalTime.of(h, m)) }, initial.hour, initial.minute, true).show()
+}
+
+@Composable
+private fun EditDialog(edit: Edit, onDismiss: () -> Unit) {
+    val initial = when (edit) {
+        is Edit.Minutes -> edit.initial.toString()
+        is Edit.Text -> edit.initial
+    }
+    // Texte entièrement sélectionné : on tape directement la nouvelle valeur.
+    var field by remember(edit) { mutableStateOf(TextFieldValue(initial, TextRange(0, initial.length))) }
+    val text = field.text
+    val focusRequester = remember { FocusRequester() }
+    LaunchedEffect(edit) { focusRequester.requestFocus() }
+    val minutes = text.trim().toIntOrNull()
+    val valid = when (edit) {
+        is Edit.Minutes -> minutes != null && minutes in 0..720
+        is Edit.Text -> true
+    }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(edit.title)) },
+        text = {
+            OutlinedTextField(
+                value = field,
+                onValueChange = { field = it },
+                modifier = Modifier.focusRequester(focusRequester),
+                singleLine = edit !is Edit.Text || !edit.multiline,
+                minLines = if (edit is Edit.Text && edit.multiline) 3 else 1,
+                isError = !valid,
+                suffix = if (edit is Edit.Minutes) {
+                    { Text(stringResource(R.string.unit_min)) }
+                } else null,
+                supportingText = if (edit is Edit.Text && edit.multiline) {
+                    { Text(stringResource(R.string.settings_one_per_line)) }
+                } else null,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = when (edit) {
+                        is Edit.Minutes -> KeyboardType.Number
+                        is Edit.Text -> if (edit.multiline) KeyboardType.Text else KeyboardType.Uri
+                    },
+                ),
+            )
+        },
+        confirmButton = {
+            TextButton(
+                enabled = valid,
+                onClick = {
+                    when (edit) {
+                        is Edit.Minutes -> edit.onSet(minutes!!)
+                        is Edit.Text -> edit.onSet(text)
+                    }
+                    onDismiss()
+                },
+            ) { Text(stringResource(R.string.ok)) }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
+        },
+    )
+}
