@@ -90,6 +90,7 @@ private sealed interface Edit {
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
+    onOpenTags: () -> Unit,
     viewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory),
 ) {
     val settings by viewModel.settings.collectAsStateWithLifecycle()
@@ -126,6 +127,7 @@ fun SettingsScreen(
                 syncStatus = syncStatusText(syncState, syncing),
                 onSync = viewModel::syncNow,
                 nextAlarms = nextAlarms,
+                onOpenTags = onOpenTags,
             )
         }
     }
@@ -143,6 +145,7 @@ private fun SettingsContent(
     syncStatus: String,
     onSync: () -> Unit,
     nextAlarms: NextAlarms?,
+    onOpenTags: () -> Unit,
 ) {
     val context = LocalContext.current
     @Composable
@@ -195,6 +198,14 @@ private fun SettingsContent(
         openEdit(Edit.Number(R.string.settings_max_cycles, s.maxSleepCycles, 1..12, null) { v -> update { it.copy(maxSleepCycles = v) } })
     }
     time(R.string.settings_latest_wake, s.weekendLatestWake) { a, t -> a.copy(weekendLatestWake = t) }
+
+    // Blocs perso
+    Section(R.string.settings_blocks)
+    ListItem(
+        headlineContent = { Text(stringResource(R.string.tags_title)) },
+        supportingContent = { Text(stringResource(R.string.settings_tags_help)) },
+        modifier = Modifier.clickable(onClick = onOpenTags),
+    )
 
     // Emploi du temps
     Section(R.string.settings_calendar)

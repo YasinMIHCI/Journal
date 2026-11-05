@@ -17,7 +17,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -29,6 +29,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -55,11 +56,14 @@ import java.util.Locale
 
 @Composable
 fun TodayScreen(
-    onOpenSettings: () -> Unit,
+    /** Jour à ouvrir (depuis la vue semaine). */
+    openDate: LocalDate,
+    onOpenWeek: () -> Unit,
     onOpenHabits: () -> Unit,
     onStartSession: (Long) -> Unit,
     viewModel: TodayViewModel = viewModel(factory = TodayViewModel.Factory),
 ) {
+    LaunchedEffect(openDate) { viewModel.goTo(openDate) }
     val habits by viewModel.habits.collectAsStateWithLifecycle()
     val wakePlan by viewModel.wakePlan.collectAsStateWithLifecycle()
     val courses by viewModel.courses.collectAsStateWithLifecycle()
@@ -75,7 +79,7 @@ fun TodayScreen(
         onNextDay = { viewModel.shiftDay(1) },
         onToday = viewModel::goToToday,
         onJournalChange = viewModel::onJournalChange,
-        onOpenSettings = onOpenSettings,
+        onOpenWeek = onOpenWeek,
         onSetBedtime = viewModel::setBedtime,
         onOpenHabits = onOpenHabits,
         onStartSession = onStartSession,
@@ -96,7 +100,7 @@ private fun TodayContent(
     onNextDay: () -> Unit,
     onToday: () -> Unit,
     onJournalChange: (String) -> Unit,
-    onOpenSettings: () -> Unit,
+    onOpenWeek: () -> Unit,
     onSetBedtime: (LocalTime) -> Unit,
     onOpenHabits: () -> Unit,
     onStartSession: (Long) -> Unit,
@@ -134,8 +138,8 @@ private fun TodayContent(
                             contentDescription = stringResource(R.string.next_day),
                         )
                     }
-                    IconButton(onClick = onOpenSettings) {
-                        Icon(Icons.Filled.Settings, contentDescription = stringResource(R.string.settings))
+                    IconButton(onClick = onOpenWeek) {
+                        Icon(Icons.Filled.DateRange, contentDescription = stringResource(R.string.week))
                     }
                 },
             )
@@ -169,8 +173,12 @@ private fun DaySection(plan: WakePlan, onSetBedtime: (LocalTime) -> Unit) {
                 headlineContent = {
                     Text(stringResource(R.string.plan_departure, formatTime(plan.wake), formatTime(plan.departure)))
                 },
-                supportingContent = plan.defaultCourse?.let { course ->
-                    { Text(stringResource(R.string.plan_default_course, formatTime(course))) }
+                supportingContent = {
+                    val details = listOfNotNull(
+                        plan.defaultCourse?.let { stringResource(R.string.plan_default_course, formatTime(it)) },
+                        plan.earlyBlock?.let { stringResource(R.string.plan_early_block, it.title, formatTime(it.start)) },
+                    )
+                    if (details.isNotEmpty()) Text(details.joinToString(" · "))
                 },
             )
             is WakePlan.Rest -> ListItem(
@@ -184,6 +192,7 @@ private fun DaySection(plan: WakePlan, onSetBedtime: (LocalTime) -> Unit) {
                     val details = buildList {
                         if (plan.cycles == null) add(stringResource(R.string.plan_latest, formatTime(plan.wake)))
                         else add(pluralStringResource(R.plurals.plan_cycles, plan.cycles, plan.cycles))
+                        plan.earlyBlock?.let { add(stringResource(R.string.plan_early_block, it.title, formatTime(it.start))) }
                     }
                     Text(details.joinToString(" · "))
                 },
@@ -298,7 +307,7 @@ private fun TodayEmptyPreview() {
             courses = emptyList(),
             wakePlan = WakePlan.Rest(DayType.WEEKEND, null, LocalTime.of(10, 30), null),
             journalText = "", journalLoaded = true,
-            onPreviousDay = {}, onNextDay = {}, onToday = {}, onJournalChange = {}, onOpenSettings = {}, onSetBedtime = {}, onOpenHabits = {}, onStartSession = {},
+            onPreviousDay = {}, onNextDay = {}, onToday = {}, onJournalChange = {}, onOpenWeek = {}, onSetBedtime = {}, onOpenHabits = {}, onStartSession = {},
         )
     }
 }
@@ -313,7 +322,7 @@ private fun TodayFilledPreview() {
             wakePlan = WakePlan.Departure(DayType.COMPANY, LocalTime.of(6, 15), LocalTime.of(7, 5)),
             habits = listOf(HabitProgress(HabitEntity(1, "Piano", 60), 900), HabitProgress(HabitEntity(2, "Dessin", 90), 0)),
             journalText = "Cours de réseau, 30 min de piano.", journalLoaded = true,
-            onPreviousDay = {}, onNextDay = {}, onToday = {}, onJournalChange = {}, onOpenSettings = {}, onSetBedtime = {}, onOpenHabits = {}, onStartSession = {},
+            onPreviousDay = {}, onNextDay = {}, onToday = {}, onJournalChange = {}, onOpenWeek = {}, onSetBedtime = {}, onOpenHabits = {}, onStartSession = {},
         )
     }
 }

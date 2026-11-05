@@ -34,6 +34,15 @@ class CalendarRepository(
         }
     }
 
+    /** Version observable de [coursesBetween]. */
+    fun observeBetween(from: LocalDate, toExclusive: LocalDate): Flow<List<Course>> = combine(
+        dao.observeBetween(
+            from.atStartOfDay(PARIS).toInstant().toEpochMilli(),
+            toExclusive.atStartOfDay(PARIS).toInstant().toEpochMilli(),
+        ),
+        settings.settings,
+    ) { entities, s -> entities.map { it.toCourse() }.filter { it.matches(s.icsGroups) } }
+
     /** Cours de [from] (inclus) à [toExclusive], filtrés par groupe. */
     suspend fun coursesBetween(from: LocalDate, toExclusive: LocalDate): List<Course> {
         val groups = settings.current().icsGroups

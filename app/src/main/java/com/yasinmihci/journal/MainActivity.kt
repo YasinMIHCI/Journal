@@ -21,8 +21,11 @@ import com.yasinmihci.journal.ui.session.SessionScreen
 import com.yasinmihci.journal.ui.settings.SettingsScreen
 import com.yasinmihci.journal.ui.theme.JournalTheme
 import com.yasinmihci.journal.ui.today.TodayScreen
+import com.yasinmihci.journal.ui.week.TagsScreen
+import com.yasinmihci.journal.ui.week.WeekScreen
+import java.time.LocalDate
 
-private enum class Screen { Today, Settings, Habits, Session }
+private enum class Screen { Week, Today, Settings, Tags, Habits, Session }
 
 class MainActivity : ComponentActivity() {
     /** Activité demandée par la notification de créneau (0 = aucune). */
@@ -48,32 +51,36 @@ class MainActivity : ComponentActivity() {
         if (savedInstanceState == null) readSessionExtra(intent)
         setContent {
             JournalTheme {
-                // Navigation minimale : deux écrans, pas besoin de navigation-compose pour l'instant.
-                var screen by rememberSaveable { mutableStateOf(Screen.Today) }
+                // Pile de navigation minimale ; la semaine est l'accueil.
+                var stack by rememberSaveable { mutableStateOf(listOf(Screen.Week.name)) }
                 var sessionHabitId by rememberSaveable { mutableLongStateOf(0L) }
+                var dayEpoch by rememberSaveable { mutableLongStateOf(LocalDate.now().toEpochDay()) }
+                fun push(screen: Screen) { stack = stack + screen.name }
+                fun pop() { if (stack.size > 1) stack = stack.dropLast(1) }
                 val requested = pendingSession.longValue
                 if (requested != 0L) {
                     sessionHabitId = requested
-                    screen = Screen.Session
+                    stack = listOf(Screen.Week.name, Screen.Session.name)
                     pendingSession.longValue = 0L
                 }
-                val home = { screen = Screen.Today }
+                val screen = Screen.valueOf(stack.last())
+                // La session gère son retour (confirmation avant d'abandonner).
+                BackHandler(enabled = stack.size > 1 && screen != Screen.Session) { pop() }
                 when (screen) {
-                    Screen.Today -> TodayScreen(
-                        onOpenSettings = { screen = Screen.Settings },
-                        onOpenHabits = { screen = Screen.Habits },
-                        onStartSession = { id -> sessionHabitId = id; screen = Screen.Session },
+                    Screen.Week -> WeekScreen(
+                        onOpenDay = { day -> dayEpoch = day.toEpochDay(); push(Screen.Today) },
+                        onOpenSettings = { push(Screen.Settings) },
                     )
-                    Screen.Settings -> {
-                        BackHandler(onBack = home)
-                        SettingsScreen(onBack = home)
-                    }
-                    Screen.Habits -> {
-                        BackHandler(onBack = home)
-                        HabitsScreen(onBack = home)
-                    }
-                    // Le retour est géré par l'écran (confirmation avant d'abandonner).
-                    Screen.Session -> SessionScreen(habitId = sessionHabitId, onDone = home)
+                    Screen.Today -> TodayScreen(
+                        openDate = LocalDate.ofEpochDay(dayEpoch),
+                        onOpenWeek = { pop() },
+                        onOpenHabits = { push(Screen.Habits) },
+                        onStartSession = { id -> sessionHabitId = id; push(Screen.Session) },
+                    )
+                    Screen.Settings -> SettingsScreen(onBack = { pop() }, onOpenTags = { push(Screen.Tags) })
+                    Screen.Tags -> TagsScreen(onBack = { pop() })
+                    Screen.Habits -> HabitsScreen(onBack = { pop() })
+                    Screen.Session -> SessionScreen(habitId = sessionHabitId, onDone = { pop() })
                 }
             }
         }
