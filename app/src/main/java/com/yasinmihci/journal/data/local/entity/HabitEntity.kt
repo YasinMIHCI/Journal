@@ -10,4 +10,6 @@ data class HabitEntity(
     val name: String,
     val weeklyGoalMinutes: Int,
     val active: Boolean = true,
+    /** Son de la notif de créneau (URI RingtoneManager) ; null = son par défaut. */
+    val soundUri: String? = null,
 )

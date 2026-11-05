@@ -8,6 +8,7 @@ import android.os.Build
 import com.yasinmihci.journal.MainActivity
 import com.yasinmihci.journal.data.calendar.CalendarRepository
 import com.yasinmihci.journal.data.periods.PeriodsRepository
+import com.yasinmihci.journal.data.repository.BlockRepository
 import com.yasinmihci.journal.data.settings.BedtimeRepository
 import com.yasinmihci.journal.data.settings.SettingsRepository
 import com.yasinmihci.journal.domain.calendar.PARIS
@@ -31,6 +32,7 @@ class AlarmScheduler(
     private val bedtimeRepository: BedtimeRepository,
     private val periodsRepository: PeriodsRepository,
     private val calendarRepository: CalendarRepository,
+    private val blockRepository: BlockRepository,
 ) {
     private val alarmManager = context.getSystemService(AlarmManager::class.java)
     private val mutex = Mutex()
@@ -45,6 +47,7 @@ class AlarmScheduler(
         val today = now.withZoneSameInstant(PARIS).toLocalDate()
         val courses = calendarRepository.coursesBetween(today, today.plusDays(HORIZON_DAYS + 1L))
         val bedtime = bedtimeRepository.current()
+        val blocks = blockRepository.current()
         val computed = AlarmPlanner.next(
             now = now,
             settings = settings,
@@ -52,6 +55,7 @@ class AlarmScheduler(
             courses = courses,
             bedtimeFor = { day -> bedtime?.takeIf { it.wakeDate == day }?.time },
             horizonDays = HORIZON_DAYS,
+            blocksFor = blocks::on,
         )
         val wake = computed.wake.takeIf { settings.wakeAlarmEnabled }
         val departure = computed.departure.takeIf { settings.departureReminderEnabled }
@@ -63,6 +67,7 @@ class AlarmScheduler(
                 courses = courses,
                 bedtimeFor = { day -> bedtime?.takeIf { it.wakeDate == day }?.time },
                 horizonDays = HORIZON_DAYS - 1,
+                blocksFor = blocks::on,
             )
         } else {
             null

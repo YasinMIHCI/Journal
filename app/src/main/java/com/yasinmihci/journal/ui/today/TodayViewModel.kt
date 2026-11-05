@@ -10,6 +10,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.yasinmihci.journal.JournalApplication
 import com.yasinmihci.journal.data.local.entity.HabitEntity
+import com.yasinmihci.journal.data.repository.BlockRepository
 import com.yasinmihci.journal.data.repository.HabitRepository
 import com.yasinmihci.journal.data.repository.SessionRepository
 import com.yasinmihci.journal.data.repository.JournalRepository
@@ -43,6 +44,7 @@ class TodayViewModel(
     private val bedtimeRepository: BedtimeRepository,
     periodsRepository: PeriodsRepository,
     calendarRepository: CalendarRepository,
+    blockRepository: BlockRepository,
     private val appScope: CoroutineScope,
 ) : ViewModel() {
 
@@ -74,10 +76,13 @@ class TodayViewModel(
     val wakePlan: StateFlow<WakePlan?> = combine(
         snapshotFlow { date },
         courses,
-        settingsRepository.settings,
         bedtimeRepository.bedtime,
-        flow { emit(periodsRepository.get()) },
-    ) { day, dayCourses, settings, bedtime, periods ->
+        combine(
+            settingsRepository.settings,
+            flow { emit(periodsRepository.get()) },
+            blockRepository.schedule,
+        ) { s, p, b -> Triple(s, p, b) },
+    ) { day, dayCourses, bedtime, (settings, periods, blocks) ->
         WakePlanner.plan(
             date = day,
             dayType = periods.dayType(day),
@@ -85,6 +90,7 @@ class TodayViewModel(
             // Filtre par date : pendant un changement de jour, la liste peut encore être celle de la veille.
             firstCourse = dayCourses.filter { it.date == day }.minByOrNull { it.start }?.startTime,
             bedtime = bedtime?.takeIf { it.wakeDate == day }?.time,
+            blocks = blocks.on(day),
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
@@ -104,6 +110,13 @@ class TodayViewModel(
         if (!journalLoaded) return
         journalText = text
         journalRepository.save(date, text)
+    }
+
+    /** Ouvre un jour précis (depuis la vue semaine). */
+    fun goTo(day: LocalDate) {
+        if (date == day) return
+        date = day
+        loadJournal()
     }
 
     fun shiftDay(days: Long) {
@@ -140,6 +153,7 @@ class TodayViewModel(
                     container.bedtimeRepository,
                     container.periodsRepository,
                     container.calendarRepository,
+                    container.blockRepository,
                     container.appScope,
                 )
             }

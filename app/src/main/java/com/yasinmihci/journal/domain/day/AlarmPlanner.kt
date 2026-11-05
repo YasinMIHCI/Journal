@@ -1,5 +1,6 @@
 package com.yasinmihci.journal.domain.day
 
+import com.yasinmihci.journal.domain.blocks.BlockOccurrence
 import com.yasinmihci.journal.domain.calendar.Course
 import com.yasinmihci.journal.domain.calendar.PARIS
 import com.yasinmihci.journal.domain.calendar.firstCourseStart
@@ -33,6 +34,7 @@ object AlarmPlanner {
         courses: List<Course>,
         bedtimeFor: (LocalDate) -> LocalTime?,
         horizonDays: Int = 8,
+        blocksFor: (LocalDate) -> List<BlockOccurrence> = { emptyList() },
     ): NextAlarms {
         val nowParis = now.withZoneSameInstant(PARIS)
         val today = nowParis.toLocalDate()
@@ -40,7 +42,9 @@ object AlarmPlanner {
         var departure: ZonedDateTime? = null
         for (i in 0..horizonDays) {
             val day = today.plusDays(i.toLong())
-            val plan = WakePlanner.plan(day, periods.dayType(day), settings, firstCourseStart(courses, day), bedtimeFor(day))
+            val plan = WakePlanner.plan(
+                day, periods.dayType(day), settings, firstCourseStart(courses, day), bedtimeFor(day), blocksFor(day),
+            )
             val wakeTime = when (plan) {
                 is WakePlan.Departure -> plan.wake
                 is WakePlan.Rest -> plan.wake

@@ -30,7 +30,8 @@ class JournalApplication : Application() {
                 c.settingsRepository.settings,
                 c.bedtimeRepository.bedtime,
                 c.syncStateRepository.state,
-            ) { _, _, _ -> }
+                c.blockRepository.schedule,
+            ) { _, _, _, _ -> }
                 .collectLatest { c.alarmScheduler.reschedule() }
         }
     }
