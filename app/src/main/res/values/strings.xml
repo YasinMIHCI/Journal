@@ -121,4 +121,7 @@
     <string name="settings_blocks">Blocs perso</string>
     <string name="settings_tags_help">Couleur et trajet de chaque type de bloc</string>
     <string name="plan_early_block">%1$s : départ %2$s</string>
+    <string name="channel_slot_habit">Créneau : %1$s</string>
+    <string name="habit_sound">Son de la notif</string>
+    <string name="habit_sound_default">Par défaut</string>
 </resources>

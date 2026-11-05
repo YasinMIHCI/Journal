@@ -48,6 +48,9 @@ data/calendar/            Téléchargement ICS, cours Room, état de synchro
 work/                     CalendarSyncWorker (WorkManager, quotidien)
 domain/day/AlarmPlanner   Prochain réveil / départ (pur, testé)
 domain/activity/          Créneaux libres (FreeSlots), semaine lun→dim, choix d'activité
+domain/blocks/            Tags + blocs perso (ponctuels / hebdo), trajets auto
+domain/week/              Agenda d'un jour (DayAgenda) + disposition côte à côte (Lanes)
+ui/week/                  Vue semaine (accueil), dialogues bloc / tag, écran Tags
 ui/session/               Caméra frontale (CameraX) + chrono d'une session
 ui/habits/                Écran d'édition des activités
 alarm/                    AlarmScheduler (setAlarmClock), receivers (alarme, boot/heure),

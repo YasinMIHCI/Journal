@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.media.AudioAttributes
 import android.media.RingtoneManager
+import android.net.Uri
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.yasinmihci.journal.MainActivity
@@ -112,8 +113,46 @@ object AlarmNotifications {
         notify(context, ID_DEPARTURE, notification)
     }
 
+    /**
+     * Canal de la notif de créneau d'une activité. Android fige le son d'un canal à sa création :
+     * un son différent = un nouveau canal (id dérivé du son), les anciens canaux de l'activité sont supprimés.
+     */
+    private fun slotChannel(context: Context, habitId: Long, habitName: String, soundUri: String?): String {
+        if (soundUri == null) return CHANNEL_SLOT
+        val nm = context.getSystemService(NotificationManager::class.java)
+        val prefix = "slot_${habitId}_"
+        val id = prefix + Integer.toHexString(soundUri.hashCode())
+        nm.notificationChannels
+            .filter { it.id.startsWith(prefix) && it.id != id }
+            .forEach { nm.deleteNotificationChannel(it.id) }
+        if (nm.getNotificationChannel(id) == null) {
+            val channel = NotificationChannel(
+                id,
+                context.getString(R.string.channel_slot_habit, habitName),
+                NotificationManager.IMPORTANCE_DEFAULT,
+            ).apply {
+                setSound(
+                    Uri.parse(soundUri),
+                    AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .build(),
+                )
+            }
+            nm.createNotificationChannel(channel)
+        }
+        return id
+    }
+
     /** Créneau libre : toucher ouvre la session (caméra + chrono) de l'activité. */
-    fun showSlot(context: Context, habitId: Long, title: String, text: String) {
+    fun showSlot(
+        context: Context,
+        habitId: Long,
+        habitName: String,
+        soundUri: String?,
+        title: String,
+        text: String,
+    ) {
         val open = PendingIntent.getActivity(
             context, ID_SLOT,
             Intent(context, MainActivity::class.java)
@@ -121,7 +160,7 @@ object AlarmNotifications {
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
-        val notification = NotificationCompat.Builder(context, CHANNEL_SLOT)
+        val notification = NotificationCompat.Builder(context, slotChannel(context, habitId, habitName, soundUri))
             .setSmallIcon(R.drawable.ic_alarm)
             .setContentTitle(title)
             .setContentText(text)

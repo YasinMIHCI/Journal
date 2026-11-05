@@ -79,6 +79,8 @@ class AlarmReceiver : BroadcastReceiver() {
         AlarmNotifications.showSlot(
             context,
             habitId = habit.id,
+            habitName = habit.name,
+            soundUri = habit.soundUri,
             title = context.getString(R.string.slot_title, end),
             text = context.getString(R.string.slot_text, habit.name, formatDuration(remaining(habit))),
         )

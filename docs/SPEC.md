@@ -67,6 +67,18 @@ Règles retenues :
 - Session : chrono avec pause ; « Terminer » enregistre, retour = abandon (confirmation).
 - Supprimer une activité = l'archiver (les sessions passées restent).
 
+## 4 bis. Vue semaine et blocs perso
+- Accueil = semaine lun → dim façon ENT : colonnes par jour, blocs dont la hauteur suit
+  la durée. Couleurs : école (cours + trajets), entreprise (départ → retour), tags perso.
+  Ligne du réveil, ligne « maintenant ». Toucher un jour → vue jour (réveil, activités, journal).
+- Tags perso (ex. Volley) : nom, couleur, trajet. Un bloc a un trajet avant et après
+  (même couleur, plus pâle).
+- Bloc ponctuel (une date) ou chaque semaine (jours choisis, date de début, fin optionnelle).
+- Effets : blocs + trajets occupés pour les créneaux libres. Le réveil laisse la
+  préparation (réglage École > Préparation) avant le premier bloc/trajet du jour ;
+  un jour libre, les cycles sont recalculés sous cette limite.
+- Chaque activité peut avoir son son de notif de créneau (un canal Android par son).
+
 ## 5. Journal
 - Un texte par jour, sous la journée. Sauvegarde auto.
 

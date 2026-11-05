@@ -1,5 +1,13 @@
 package com.yasinmihci.journal.ui.habits
 
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
+import android.media.RingtoneManager
+import android.net.Uri
+import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,6 +36,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -130,6 +139,16 @@ fun HabitsScreen(
     }
 }
 
+/** Nom lisible d'un son ; null = son par défaut. */
+@Composable
+private fun soundTitle(context: Context, uri: String?): String {
+    val default = stringResource(R.string.habit_sound_default)
+    return remember(uri) {
+        uri?.let { runCatching { RingtoneManager.getRingtone(context, Uri.parse(it))?.getTitle(context) }.getOrNull() }
+            ?: default
+    }
+}
+
 @Composable
 private fun HabitDialog(
     habit: HabitEntity,
@@ -139,6 +158,16 @@ private fun HabitDialog(
 ) {
     var name by remember(habit) { mutableStateOf(habit.name) }
     var goal by remember(habit) { mutableStateOf(habit.weeklyGoalMinutes.toString()) }
+    var sound by remember(habit) { mutableStateOf(habit.soundUri) }
+    val context = LocalContext.current
+    val picker = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            @Suppress("DEPRECATION")
+            val uri = result.data?.getParcelableExtra<Uri>(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
+            // « Par défaut » ou rien = son par défaut des notifications.
+            sound = uri?.takeIf { it != Settings.System.DEFAULT_NOTIFICATION_URI }?.toString()
+        }
+    }
     val goalMinutes = goal.trim().toIntOrNull()
     val valid = name.isNotBlank() && goalMinutes != null && goalMinutes in 1..10_080
     AlertDialog(
@@ -162,12 +191,28 @@ private fun HabitDialog(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.padding(top = 8.dp),
                 )
+                ListItem(
+                    headlineContent = { Text(stringResource(R.string.habit_sound)) },
+                    supportingContent = { Text(soundTitle(context, sound)) },
+                    modifier = Modifier.padding(top = 8.dp).clickable {
+                        picker.launch(
+                            Intent(RingtoneManager.ACTION_RINGTONE_PICKER)
+                                .putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_NOTIFICATION)
+                                .putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true)
+                                .putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false)
+                                .putExtra(
+                                    RingtoneManager.EXTRA_RINGTONE_EXISTING_URI,
+                                    sound?.let(Uri::parse) ?: Settings.System.DEFAULT_NOTIFICATION_URI,
+                                ),
+                        )
+                    },
+                )
             }
         },
         confirmButton = {
             TextButton(
                 enabled = valid,
-                onClick = { onSave(habit.copy(name = name.trim(), weeklyGoalMinutes = goalMinutes!!)) },
+                onClick = { onSave(habit.copy(name = name.trim(), weeklyGoalMinutes = goalMinutes!!, soundUri = sound)) },
             ) { Text(stringResource(R.string.ok)) }
         },
         dismissButton = {
